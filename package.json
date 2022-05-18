@@ -10,9 +10,22 @@
     "test": "jest --watchAll"
   },
   "dependencies": {
+    "@chakra-ui/react": "^2.0.0",
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "axios": "^0.27.2",
+    "date-fns": "^2.28.0",
+    "eslint-plugin-import": "^2.26.0",
+    "framer-motion": "^6",
     "next": "12.1.6",
+    "nookies": "^2.5.2",
     "react": "18.1.0",
-    "react-dom": "18.1.0"
+    "react-dom": "18.1.0",
+    "react-hook-form": "^7.31.1",
+    "react-icons": "^4.3.1",
+    "sweetalert2": "^11.4.14",
+    "sweetalert2-react-content": "^5.0.0",
+    "yup": "^0.32.11"
   },
   "devDependencies": {
     "@testing-library/dom": "^8.13.0",
@@ -24,6 +37,7 @@
     "babel-jest": "^28.1.0",
     "eslint": "8.15.0",
     "eslint-config-next": "12.1.6",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "jest": "^28.1.0",
     "jest-dom": "^4.0.0",
     "jest-environment-jsdom": "^28.1.0",
