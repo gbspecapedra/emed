@@ -1,34 +1,102 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<p align="center">eMED</p>
+<p align="center">Medical Clinic Management System</p>
 
-## Getting Started
+<p align="center">
+  <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/gisabernardess/emed">
+  <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/gisabernardess/emed">
+  <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/gisabernardess/emed">
+  <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/gisabernardess/emed">
+  <img alt="Github license" src="https://img.shields.io/github/license/gisabernardess/emed">
+</p>
 
-First, run the development server:
+<p align="center">
+  <a href="#-project">Project</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#-technologies">Technologies</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#-project-specification">Project Specification</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#-how-to-use">How To Use</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#-license">License</a>&nbsp;
+</p>
+
+## 💬 Project
+
+Final project of the Specialization Course in Web Application Development at the Pontifical Catholic University of Minas Gerais as a partial requirement to obtain the title of specialist.
+
+The project aims to develop a software application for a web system for medical clinics, in order to model and develop intelligent environments to improve care in medical clinics.
+
+## 🚀 Technologies
+
+Project developed with the main following technologies:
+
+- [Create Next App](https://nextjs.org/docs/api-reference/create-next-app)
+- [Chakra UI](https://chakra-ui.com/)
+- [Node.js](https://nodejs.org/en/)
+- [Adonis.js](https://adonisjs.com/)
+- [TypeScript](https://www.typescriptlang.org/)
+
+## 🔖 Project Specification
+
+### Specification
+
+You can view the specification [here](https://github.com/gisabernardess/emed/wiki/specification)
+
+### Layout
+
+You can view the layout of the project in the <a href="" rel="nofollow">web</a> version only. You need to have a <a href="https://www.figma.com/" rel="nofollow">Figma</a> account to access it.
+
+## ℹ️ How To Use
+
+To clone and run this application, you'll need [Git](https://git-scm.com), [Yarn](https://legacy.yarnpkg.com), [Node.js](https://nodejs.org/en/) >= 16.15, [Docker](https://docs.docker.com/desktop/) and [Docker-Compose](https://docs.docker.com/compose/). From your command line:
+
+### 🖥️ Web
 
 ```bash
-npm run dev
-# or
-yarn dev
+# Clone the repository
+$ git clone https://github.com/gisabernardess/emed.git
+
+# Go into the repository
+$ cd emed/web
+
+# Install dependencies
+$ yarn
+
+# Run the development server
+$ yarn dev
+
+# Navigate to http://localhost:3000
+# The app will automatically reload if you change any of the source files.
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### ⚙️ Server
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+```bash
+# Clone the repository
+$ git clone https://github.com/gisabernardess/emed-service.git
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+# Go into the repository
+$ cd emed-service
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+# Install dependencies
+$ yarn
 
-## Learn More
+# Start docker container for MySQL
+$ docker-compose up -d
 
-To learn more about Next.js, take a look at the following resources:
+# Create the .env file in the repository using the sample file .env.example
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Run the development server
+$ yarn dev
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+# Run the migrations & seeders
+$ yarn reset-db
 
-## Deploy on Vercel
+# Navigate to http://localhost:3333
+# The app will automatically reload if you change any of the source files.
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+This project is under the MIT license. See the <a href="https://github.com/gisabernardess/emed/blob/main/LICENSE" rel="nofollow">LICENSE</a> for more information.
+
+---
+
+<p align="center">Made with ♥ by Gisele Silva 👋 <a href="https://www.linkedin.com/in/gisabernardess/" rel="nofollow">Get in touch!</a></p>
