@@ -78,10 +78,10 @@ $ cd emed-service
 # Install dependencies
 $ yarn
 
-# Start docker container for MySQL
-$ docker-compose up -d
-
 # Create the .env file in the repository using the sample file .env.example
+
+# Start docker container for MySQL
+$ docker compose up -d
 
 # Run the development server
 $ yarn dev
