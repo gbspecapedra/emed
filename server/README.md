@@ -15,7 +15,7 @@ Server-side was developed with the following technologies:
 
 ## ℹ️ How To Use
 
-Go to [eMED REST API](https://github.com/gisabernardess/emed-service) repository
+Go to [eMED REST API](https://github.com/gisabernardess/emed-service) repository.
 
 ---
 

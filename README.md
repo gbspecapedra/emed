@@ -37,11 +37,11 @@ Project developed with the main following technologies:
 
 ### Specification
 
-You can view the specification [here](https://github.com/gisabernardess/emed/wiki/specification)
+You can view the requirements [here](https://github.com/gisabernardess/emed/wiki/specification).
 
 ### Layout
 
-You can view the layout of the project in the <a href="" rel="nofollow">web</a> version only. You need to have a <a href="https://www.figma.com/" rel="nofollow">Figma</a> account to access it.
+You can view the layout of the project in the <a href="https://www.figma.com/file/TDYKZPMyMp0bqj3QDAdh6Q/eMED?node-id=3%3A5" rel="nofollow">web</a> version only. You need to have a <a href="https://www.figma.com/" rel="nofollow">Figma</a> account to access it.
 
 ## ℹ️ How To Use
 
