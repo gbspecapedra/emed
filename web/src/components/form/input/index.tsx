@@ -16,7 +16,7 @@ import { IInputValidator } from '../../../models/interfaces/inputValidator.inter
 
 interface IInputProps extends ChakraInputProps {
   name: string
-  type: string
+  type?: string
   label?: string
   defaultValue?: string
   validators?: IInputValidator
@@ -25,7 +25,7 @@ interface IInputProps extends ChakraInputProps {
 export const Input: React.FC<IInputProps> = ({
   name,
   label,
-  type,
+  type = 'text',
   defaultValue = '',
   validators,
   ...props

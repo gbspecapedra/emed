@@ -1,252 +1,435 @@
 import {
-  IconButton,
-  Avatar,
   Box,
-  CloseButton,
+  Button,
   Flex,
-  HStack,
-  VStack,
-  Icon,
-  useColorModeValue,
-  Link,
-  Drawer,
-  DrawerContent,
-  Text,
-  useDisclosure,
-  BoxProps,
-  FlexProps,
+  FormErrorMessage,
+  IconButton,
   Menu,
   MenuButton,
-  MenuDivider,
   MenuItem,
   MenuList,
+  Select,
+  Stack,
+  Tag,
+  TagLabel,
+  Textarea,
 } from '@chakra-ui/react'
+import { format } from 'date-fns'
 import { GetServerSideProps } from 'next'
+import { useRouter } from 'next/router'
 import { parseCookies } from 'nookies'
-import React, { ReactNode } from 'react'
-import { IconType } from 'react-icons'
-import { AiOutlineUser } from 'react-icons/ai'
+
+import { Calendar } from 'primereact/calendar'
+import { Column } from 'primereact/column'
+import { DataTable } from 'primereact/datatable'
+import { Dialog } from 'primereact/dialog'
+import { Toolbar } from 'primereact/toolbar'
+import React, { useState, useRef } from 'react'
+
+import { BiDotsVerticalRounded } from 'react-icons/bi'
+import { BsExclamationTriangle } from 'react-icons/bs'
 import {
-  FiHome,
-  FiTrendingUp,
-  FiCompass,
-  FiStar,
-  FiSettings,
-  FiMenu,
-  FiBell,
-  FiChevronDown,
-} from 'react-icons/fi'
-import { useAuth } from '../../services/contexts/AuthContext'
+  FaCheck,
+  FaStethoscope,
+  FaTimes,
+  FaUserEdit,
+  FaUserPlus,
+  FaUserSlash,
+  FaUserTimes,
+} from 'react-icons/fa'
+import { SiMicrosoftexcel } from 'react-icons/si'
+
+import { Attendance } from '../../models/attendance.model'
+import { AttendanceStatus, AttendanceType } from '../../models/enums'
+import { api } from '../../services/api'
+import { getAPIClient } from '../../services/axios'
+import { useNotification } from '../../services/hooks/useNotification'
 import { EMED_TOKEN } from '../../utils'
 
-interface LinkItemProps {
-  name: string
-  icon: IconType
-}
-const LinkItems: Array<LinkItemProps> = [
-  { name: 'Home', icon: FiHome },
-  { name: 'Trending', icon: FiTrendingUp },
-  { name: 'Explore', icon: FiCompass },
-  { name: 'Favourites', icon: FiStar },
-  { name: 'Settings', icon: FiSettings },
-]
-
-export default function SidebarWithHeader({
-  children,
-}: {
-  children: ReactNode
-}) {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  return (
-    <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
-      <SidebarContent
-        onClose={() => onClose}
-        display={{ base: 'none', md: 'block' }}
-      />
-      <Drawer
-        autoFocus={false}
-        isOpen={isOpen}
-        placement="left"
-        onClose={onClose}
-        returnFocusOnClose={false}
-        onOverlayClick={onClose}
-        size="full"
-      >
-        <DrawerContent>
-          <SidebarContent onClose={onClose} />
-        </DrawerContent>
-      </Drawer>
-      {/* mobilenav */}
-      <MobileNav onOpen={onOpen} />
-      <Box ml={{ base: 0, md: 60 }} p="4">
-        {children}
-      </Box>
-    </Box>
-  )
+interface IErrorsMap {
+  cancellationReason?: {
+    message: string
+  }
 }
 
-interface SidebarProps extends BoxProps {
-  onClose: () => void
+interface IAttendanceInputs {
+  patientId: string
+  professionalId: string
+  date: string
 }
 
-const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
-  return (
-    <Box
-      transition="3s ease"
-      bg={useColorModeValue('white', 'gray.900')}
-      borderRight="1px"
-      borderRightColor={useColorModeValue('gray.200', 'gray.700')}
-      w={{ base: 'full', md: 60 }}
-      pos="fixed"
-      h="full"
-      {...rest}
-    >
-      <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-        <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
-          eMED
-        </Text>
-        <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
-      </Flex>
-      {LinkItems.map(link => (
-        <NavItem key={link.name} icon={link.icon}>
-          {link.name}
-        </NavItem>
-      ))}
-    </Box>
-  )
+interface DashboardProps {
+  attendances: Attendance[]
+  totalCount: number
 }
 
-interface NavItemProps extends FlexProps {
-  icon: IconType
-  children: ReactNode
-}
-const NavItem = ({ icon, children, ...rest }: NavItemProps) => {
-  return (
-    <Link
-      href="#"
-      style={{ textDecoration: 'none' }}
-      _focus={{ boxShadow: 'none' }}
-    >
-      <Flex
-        align="center"
-        p="4"
-        mx="4"
-        borderRadius="lg"
-        role="group"
-        cursor="pointer"
-        _hover={{
-          bg: 'cyan.400',
-          color: 'white',
-        }}
-        {...rest}
-      >
-        {icon && (
-          <Icon
-            mr="4"
-            fontSize="16"
-            _groupHover={{
-              color: 'white',
-            }}
-            as={icon}
+const Dashboard = ({ attendances }: DashboardProps) => {
+  const router = useRouter()
+  const notification = useNotification()
+  const table = useRef(null)
+
+  const [listOfAttendances, setListOfAttendances] =
+    useState<Attendance[]>(attendances)
+  const [openCreateDialog, setOpenCreateDialog] = useState(false)
+  const [openRescheduleDialog, setOpenRescheduleDialog] = useState(false)
+  const [openCancelDialog, setOpenCancelDialog] = useState(false)
+
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<Partial<Attendance>>()
+  const [errors, setErrors] = useState<IErrorsMap>()
+
+  const [globalFilter, setGlobalFilter] = useState(null)
+
+  async function refetchAttendances() {
+    const response = await api.get('/attendances')
+    setSelectedAppointment(undefined)
+    setListOfAttendances(response.data)
+  }
+
+  const handleCreateAttendance = async () => {
+    try {
+      if (!selectedAppointment) return
+
+      await api
+        .post(`/attendances`, {
+          ...selectedAppointment,
+        })
+        .then(() => {
+          notification.success({
+            title: 'Attendance created!',
+          })
+          refetchAttendances()
+        })
+        .catch(({ response }) => notification.error(response.data.error))
+    } catch (error) {
+      notification.error()
+    }
+  }
+
+  const handleNotAttended = async (row: any) => {
+    try {
+      if (!selectedAppointment) return
+
+      await api
+        .put(`/attendances/${row.id}`, {
+          id: row.id,
+          cancellationReason: 'Patient did not attend.',
+        })
+        .then(() => {
+          notification.success({
+            title: 'Attendance updated!',
+          })
+          refetchAttendances()
+        })
+        .catch(({ response }) => notification.error(response.data.error))
+    } catch (error) {
+      notification.error()
+    }
+  }
+
+  const handleCancelAppointment = async () => {
+    try {
+      if (!selectedAppointment) return
+
+      await api
+        .put(`/attendances/${selectedAppointment.id}`, {
+          id: selectedAppointment.id,
+          cancellationReason: selectedAppointment.cancellationReason,
+        })
+        .then(() => {
+          notification.success({
+            title: 'Attendance canceled!',
+          })
+          refetchAttendances()
+        })
+        .catch(({ response }) => notification.error(response.data.error))
+    } catch (error) {
+      notification.error()
+    }
+  }
+
+  const handleExportToExcel = () => {
+    console.log('export to excel')
+  }
+
+  const onInputChange = (e: any, name: string) => {
+    e.preventDefault()
+    const val = (e.target && e.target.value) || ''
+    setSelectedAppointment({ ...selectedAppointment, [name]: val })
+  }
+
+  const actionButtons = (row: any) => {
+    return (
+      <Flex flexDirection="row" justifyContent="end">
+        <Button
+          colorScheme="blue"
+          variant="solid"
+          marginRight={2}
+          onClick={() => router.push('/dashboard/medical-record')}
+        >
+          <FaStethoscope />
+        </Button>
+        <Button
+          colorScheme="red"
+          variant="outline"
+          marginRight={2}
+          onClick={() => handleNotAttended(row)}
+        >
+          <FaUserSlash />
+        </Button>
+        <Menu>
+          <MenuButton
+            as={IconButton}
+            aria-label="Options"
+            icon={<BiDotsVerticalRounded />}
+            variant="outline"
           />
-        )}
-        {children}
+          <MenuList>
+            <MenuItem
+              icon={<FaUserEdit />}
+              onClick={() => {
+                setSelectedAppointment(row)
+                setOpenRescheduleDialog(true)
+              }}
+            >
+              Reschedule
+            </MenuItem>
+            <MenuItem
+              icon={<FaUserTimes />}
+              onClick={() => {
+                setSelectedAppointment(row)
+                setOpenCancelDialog(true)
+              }}
+            >
+              Cancel
+            </MenuItem>
+          </MenuList>
+        </Menu>
       </Flex>
-    </Link>
-  )
-}
-
-interface MobileProps extends FlexProps {
-  onOpen: () => void
-}
-const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
-  const { professional, signOut } = useAuth()
+    )
+  }
 
   return (
-    <Flex
-      ml={{ base: 0, md: 60 }}
-      px={{ base: 4, md: 4 }}
-      height="20"
-      alignItems="center"
-      bg={useColorModeValue('white', 'gray.900')}
-      borderBottomWidth="1px"
-      borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
-      justifyContent={{ base: 'space-between', md: 'flex-end' }}
-      {...rest}
-    >
-      <IconButton
-        display={{ base: 'flex', md: 'none' }}
-        onClick={onOpen}
-        variant="outline"
-        aria-label="open menu"
-        icon={<FiMenu />}
-      />
-
-      <Text
-        display={{ base: 'flex', md: 'none' }}
-        fontSize="2xl"
-        fontFamily="monospace"
-        fontWeight="bold"
-      >
-        eMED
-      </Text>
-
-      <HStack spacing={{ base: '0', md: '6' }}>
-        <IconButton
-          size="lg"
-          variant="ghost"
-          aria-label="open menu"
-          icon={<FiBell />}
+    <>
+      <Box>
+        <Toolbar
+          className="mb-4 bg-white"
+          left={
+            <Button
+              type="button"
+              colorScheme="gray"
+              onClick={handleExportToExcel}
+            >
+              <SiMicrosoftexcel />
+            </Button>
+          }
+          right={
+            <Button
+              colorScheme="green"
+              variant="solid"
+              onClick={() => setOpenCreateDialog(true)}
+            >
+              <FaUserPlus />
+            </Button>
+          }
         />
-        <Flex alignItems={'center'}>
-          <Menu>
-            <MenuButton
-              py={2}
-              transition="all 0.3s"
-              _focus={{ boxShadow: 'none' }}
-            >
-              <HStack>
-                <Avatar
-                  size={'sm'}
-                  name={professional?.name}
-                  icon={<AiOutlineUser fontSize="1.5rem" />}
-                />
-                <VStack
-                  display={{ base: 'none', md: 'flex' }}
-                  alignItems="flex-start"
-                  spacing="1px"
-                  ml="2"
+
+        <DataTable
+          ref={table}
+          value={listOfAttendances}
+          dataKey="id"
+          paginator
+          rows={10}
+          rowsPerPageOptions={[5, 10, 25]}
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} appointments"
+          globalFilter={globalFilter}
+          responsiveLayout="scroll"
+        >
+          <Column field="patient.name" header="Patient" sortable />
+          <Column field="professional.name" header="Professional" sortable />
+          <Column
+            field="date"
+            header="Date"
+            body={row => {
+              return format(new Date(row.date), 'PPPPpp')
+            }}
+            sortable
+          />
+          <Column
+            field="status"
+            header="Status"
+            body={row => {
+              let color = 'red'
+              if (row.status === AttendanceStatus.IN_PROGRESS) {
+                color = 'yellow'
+              } else if (row.status === AttendanceStatus.CONFIRMED) {
+                color = 'green'
+              } else if (row.status === AttendanceStatus.DONE) {
+                color = 'gray'
+              }
+
+              return (
+                <Tag
+                  size="md"
+                  key={row.id}
+                  borderRadius="full"
+                  variant="solid"
+                  colorScheme={color}
                 >
-                  <Text fontSize="sm">{professional?.name}</Text>
-                  <Text fontSize="xs" color="gray.600">
-                    {professional?.type}
-                  </Text>
-                </VStack>
-                <Box display={{ base: 'none', md: 'flex' }}>
-                  <FiChevronDown />
-                </Box>
-              </HStack>
-            </MenuButton>
-            <MenuList
-              bg={useColorModeValue('white', 'gray.900')}
-              borderColor={useColorModeValue('gray.200', 'gray.700')}
+                  <TagLabel>{row.status}</TagLabel>
+                </Tag>
+              )
+            }}
+            sortable
+          />
+          <Column body={actionButtons} exportable={false} />
+        </DataTable>
+      </Box>
+
+      <Dialog
+        visible={openCreateDialog}
+        style={{ width: '450px' }}
+        header="Create appointment"
+        modal
+        className="p-fluid"
+        footer={
+          <React.Fragment>
+            <Button
+              leftIcon={<FaTimes />}
+              colorScheme="red"
+              onClick={() => {
+                setErrors(undefined)
+                setSelectedAppointment(undefined)
+                setOpenCreateDialog(false)
+              }}
             >
-              <MenuItem>Profile</MenuItem>
-              <MenuItem>Settings</MenuItem>
-              <MenuItem>Billing</MenuItem>
-              <MenuDivider />
-              <MenuItem onClick={async () => await signOut()}>
-                Sign out
-              </MenuItem>
-            </MenuList>
-          </Menu>
-        </Flex>
-      </HStack>
-    </Flex>
+              Cancel
+            </Button>
+            <Button
+              leftIcon={<FaCheck />}
+              colorScheme="green"
+              onClick={() => {
+                setErrors(undefined)
+                console.log('save')
+              }}
+            >
+              Create
+            </Button>
+          </React.Fragment>
+        }
+        onHide={() => {
+          setErrors(undefined)
+          setSelectedAppointment(undefined)
+          setOpenCreateDialog(false)
+        }}
+      >
+        <Select placeholder="Select attendance type">
+          {Object.keys(AttendanceType).map((key, index) => {
+            return (
+              <option key={index} value={key}>
+                {key}
+              </option>
+            )
+          })}
+        </Select>
+        <Select placeholder="Select patient">
+          {Object.keys(AttendanceType).map((key, index) => {
+            return (
+              <option key={index} value={key}>
+                {key}
+              </option>
+            )
+          })}
+        </Select>
+        <Calendar
+          id="date"
+          name="date"
+          value={new Date(selectedAppointment?.date ?? '')}
+          onChange={e => onInputChange(e, 'date')}
+          disabledDays={[0, 6]}
+          showIcon
+          showTime
+          showButtonBar
+        />
+      </Dialog>
+
+      <Dialog
+        visible={openCancelDialog}
+        style={{ width: '450px' }}
+        header="Cancel appointment"
+        modal
+        footer={
+          <React.Fragment>
+            <Button
+              leftIcon={<FaTimes />}
+              colorScheme="red"
+              onClick={() => {
+                setErrors(undefined)
+                setSelectedAppointment(undefined)
+                setOpenCancelDialog(false)
+              }}
+            >
+              No
+            </Button>
+            <Button
+              leftIcon={<FaCheck />}
+              colorScheme="green"
+              onClick={e => {
+                if (!e.currentTarget.value) {
+                  setErrors({
+                    cancellationReason: {
+                      message: 'Cancellation reason is required',
+                    },
+                  })
+                } else {
+                  handleCancelAppointment()
+                }
+              }}
+            >
+              Yes
+            </Button>
+          </React.Fragment>
+        }
+        onHide={() => {
+          setErrors(undefined)
+          setSelectedAppointment(undefined)
+          setOpenCancelDialog(false)
+        }}
+      >
+        <Stack align="center">
+          <BsExclamationTriangle size={50} color="orange" />
+          {selectedAppointment && (
+            <span>
+              Are you sure you want to cancel the appointment of patient{' '}
+              <b>{selectedAppointment.patient?.name}</b>?
+            </span>
+          )}
+          <Textarea
+            id="cancellationReason"
+            name="cancellationReason"
+            onChange={e => onInputChange(e, 'cancellationReason')}
+            placeholder="Describe the reason for the cancellation..."
+            size="sm"
+            resize="none"
+            isInvalid={!!errors?.['cancellationReason']}
+          />
+          {!!errors?.['cancellationReason'] && (
+            <FormErrorMessage>
+              {errors?.['cancellationReason']?.message}
+            </FormErrorMessage>
+          )}
+        </Stack>
+      </Dialog>
+    </>
   )
 }
+
+export default Dashboard
 
 export const getServerSideProps: GetServerSideProps = async ctx => {
+  const apiClient = getAPIClient(ctx)
+
   const { [EMED_TOKEN]: token } = parseCookies(ctx)
 
   if (!token) {
@@ -258,7 +441,9 @@ export const getServerSideProps: GetServerSideProps = async ctx => {
     }
   }
 
+  const { data } = await apiClient.get('/attendances')
+
   return {
-    props: {},
+    props: { attendances: data, totalCount: data.length },
   }
 }

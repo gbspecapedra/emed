@@ -6,7 +6,7 @@ import {
   Heading,
   useColorModeValue,
 } from '@chakra-ui/react'
-import { NextPage } from 'next'
+import type { ReactElement } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { Input } from '../components/form/input'
 import { TextButtonLink } from '../components/form/textButtonLink'
@@ -18,7 +18,7 @@ interface ILoginInputs {
   password: string
 }
 
-const Home: NextPage = () => {
+const Home = () => {
   const { signIn } = useAuth()
 
   const methods = useForm<ILoginInputs>({
@@ -91,6 +91,10 @@ const Home: NextPage = () => {
       </Stack>
     </Flex>
   )
+}
+
+Home.getLayout = function getLayout(page: ReactElement) {
+  return <>{page}</>
 }
 
 export default Home

@@ -8,8 +8,8 @@ export type Professional = {
   registrationState?: string
   specialty?: string
   email: string
-  password: string
-  rememberMeToken: string
+  password?: string
+  rememberMeToken?: string
   active: boolean
   createdAt: string
   updatedAt: string

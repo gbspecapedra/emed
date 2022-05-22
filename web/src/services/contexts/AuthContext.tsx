@@ -71,7 +71,7 @@ export function AuthProvider({ children }: IAuthProviderProps) {
             to: 'dashboard',
           })
         })
-        .catch(response => {
+        .catch(({ response }) => {
           notification.error({ message: response.data.error })
         })
     } catch (error) {
