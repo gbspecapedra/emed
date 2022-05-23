@@ -2,7 +2,10 @@ import {
   Box,
   Button,
   Flex,
+  FormControl,
   FormErrorMessage,
+  FormLabel,
+  HStack,
   IconButton,
   Menu,
   MenuButton,
@@ -22,94 +25,151 @@ import { parseCookies } from 'nookies'
 import { Calendar } from 'primereact/calendar'
 import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
-import { Dialog } from 'primereact/dialog'
+import { InputText } from 'primereact/inputtext'
 import { Toolbar } from 'primereact/toolbar'
 import React, { useState, useRef } from 'react'
+import { useForm } from 'react-hook-form'
 
 import { BiDotsVerticalRounded } from 'react-icons/bi'
-import { BsExclamationTriangle } from 'react-icons/bs'
+import { BsExclamationTriangle, BsFillInfoCircleFill } from 'react-icons/bs'
 import {
-  FaCheck,
+  FaHistory,
   FaStethoscope,
-  FaTimes,
   FaUserEdit,
-  FaUserPlus,
+  FaUserNurse,
   FaUserSlash,
   FaUserTimes,
 } from 'react-icons/fa'
+import { GoPlus } from 'react-icons/go'
 import { SiMicrosoftexcel } from 'react-icons/si'
+import Modal from '../../components/modal'
+import Tooltip from '../../components/tooltip'
+import { Professional } from '../../models'
 
 import { Attendance } from '../../models/attendance.model'
-import { AttendanceStatus, AttendanceType } from '../../models/enums'
+import {
+  AttendanceStatus,
+  AttendanceType,
+  ProfessionalType,
+} from '../../models/enums'
+import { Patient } from '../../models/patient.model'
 import { api } from '../../services/api'
 import { getAPIClient } from '../../services/axios'
+import { useAuth } from '../../services/contexts/AuthContext'
 import { useNotification } from '../../services/hooks/useNotification'
-import { EMED_TOKEN } from '../../utils'
-
-interface IErrorsMap {
-  cancellationReason?: {
-    message: string
-  }
-}
-
-interface IAttendanceInputs {
-  patientId: string
-  professionalId: string
-  date: string
-}
+import { useRoles } from '../../services/hooks/useRoles'
+import { EMED_TOKEN, saveAsExcelFile } from '../../utils'
 
 interface DashboardProps {
   attendances: Attendance[]
   totalCount: number
 }
 
-const Dashboard = ({ attendances }: DashboardProps) => {
+const Dashboard: React.FC<DashboardProps> = ({ attendances }) => {
+  const { professional } = useAuth()
   const router = useRouter()
+  const {
+    canManageAppointments,
+    canManageAttendances,
+    canManageMedicalRecords,
+  } = useRoles()
   const notification = useNotification()
   const table = useRef(null)
 
+  const [globalFilter, setGlobalFilter] = useState(null)
+  const [selectedAppointment, setSelectedAppointment] = useState<Attendance>(
+    {} as Attendance,
+  )
+
   const [listOfAttendances, setListOfAttendances] =
     useState<Attendance[]>(attendances)
+  const [listOfPatients, setListOfPatients] = useState<Patient[]>([])
+  const [listOfProfessionals, setListOfProfessionals] = useState<
+    Professional[]
+  >([])
+
   const [openCreateDialog, setOpenCreateDialog] = useState(false)
   const [openRescheduleDialog, setOpenRescheduleDialog] = useState(false)
   const [openCancelDialog, setOpenCancelDialog] = useState(false)
 
-  const [selectedAppointment, setSelectedAppointment] =
-    useState<Partial<Attendance>>()
-  const [errors, setErrors] = useState<IErrorsMap>()
-
-  const [globalFilter, setGlobalFilter] = useState(null)
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid, errors },
+  } = useForm()
 
   async function refetchAttendances() {
     const response = await api.get('/attendances')
-    setSelectedAppointment(undefined)
+    setSelectedAppointment({} as Attendance)
     setListOfAttendances(response.data)
   }
 
-  const handleCreateAttendance = async () => {
-    try {
-      if (!selectedAppointment) return
+  async function fetchPatients() {
+    const response = await api.get('/patients')
+    setListOfPatients(response.data)
+  }
 
-      await api
-        .post(`/attendances`, {
-          ...selectedAppointment,
-        })
-        .then(() => {
-          notification.success({
-            title: 'Attendance created!',
-          })
-          refetchAttendances()
-        })
-        .catch(({ response }) => notification.error(response.data.error))
-    } catch (error) {
-      notification.error()
-    }
+  async function fetchProfessionals() {
+    const response = await api.get('/professionals')
+    setListOfProfessionals(response.data)
+  }
+
+  const handleCreateAttendance = async (form: any) => {
+    handleCloseModal()
+
+    console.log('create')
+
+    // try {
+    //   if (!selectedAppointment) return
+    //   await api
+    //     .post(`/attendances`, {
+    //       ...selectedAppointment,
+    //     })
+    //     .then(() => {
+    //       notification.success({
+    //         title: 'Attendance created!',
+    //       })
+    //       refetchAttendances()
+    //     })
+    //     .catch(({ response }) => notification.error(response.data.error))
+    // } catch (error) {
+    //   notification.error()
+    // }
+  }
+
+  const handleUpdateAttendance = async (form: any) => {
+    console.log(form)
+    handleCloseModal()
+
+    // try {
+    //   if (!selectedAppointment) return
+    //   await api
+    //     .put(`/attendances/${selectedAppointment.id}`, {
+    //       id: selectedAppointment.id,
+    //       date: formatISO9075(selectedAppointment.date),
+    //       status: selectedAppointment.cancellationReason
+    //         ? AttendanceStatus.CANCELED
+    //         : selectedAppointment.status,
+    //       cancellationReason: selectedAppointment.cancellationReason ?? null,
+    //     })
+    //     .then(() => {
+    //       notification.success({
+    //         title: `Attendance ${
+    //           selectedAppointment.status === AttendanceStatus.CANCELED
+    //             ? 'canceled'
+    //             : 'updated'
+    //         }!`,
+    //       })
+    //       refetchAttendances()
+    //     })
+    //     .catch(({ response }) => notification.error(response.data.error))
+    // } catch (error) {
+    //   notification.error()
+    // }
   }
 
   const handleNotAttended = async (row: any) => {
     try {
-      if (!selectedAppointment) return
-
       await api
         .put(`/attendances/${row.id}`, {
           id: row.id,
@@ -127,84 +187,103 @@ const Dashboard = ({ attendances }: DashboardProps) => {
     }
   }
 
-  const handleCancelAppointment = async () => {
-    try {
-      if (!selectedAppointment) return
-
-      await api
-        .put(`/attendances/${selectedAppointment.id}`, {
-          id: selectedAppointment.id,
-          cancellationReason: selectedAppointment.cancellationReason,
-        })
-        .then(() => {
-          notification.success({
-            title: 'Attendance canceled!',
-          })
-          refetchAttendances()
-        })
-        .catch(({ response }) => notification.error(response.data.error))
-    } catch (error) {
-      notification.error()
-    }
-  }
-
   const handleExportToExcel = () => {
-    console.log('export to excel')
+    import('xlsx').then(xlsx => {
+      const worksheet = xlsx.utils.json_to_sheet(attendances)
+      const workbook = { Sheets: { data: worksheet }, SheetNames: ['data'] }
+      const excelBuffer = xlsx.write(workbook, {
+        bookType: 'xlsx',
+        type: 'array',
+      })
+      saveAsExcelFile(excelBuffer, 'attendances')
+    })
   }
 
-  const onInputChange = (e: any, name: string) => {
-    e.preventDefault()
-    const val = (e.target && e.target.value) || ''
-    setSelectedAppointment({ ...selectedAppointment, [name]: val })
+  const handleCloseModal = () => {
+    setSelectedAppointment({} as Attendance)
+    setOpenCreateDialog(false)
+    setOpenRescheduleDialog(false)
+    setOpenCancelDialog(false)
   }
 
   const actionButtons = (row: any) => {
     return (
       <Flex flexDirection="row" justifyContent="end">
-        <Button
-          colorScheme="blue"
-          variant="solid"
-          marginRight={2}
-          onClick={() => router.push('/dashboard/medical-record')}
-        >
-          <FaStethoscope />
-        </Button>
-        <Button
-          colorScheme="red"
-          variant="outline"
-          marginRight={2}
-          onClick={() => handleNotAttended(row)}
-        >
-          <FaUserSlash />
-        </Button>
-        <Menu>
-          <MenuButton
-            as={IconButton}
-            aria-label="Options"
-            icon={<BiDotsVerticalRounded />}
-            variant="outline"
-          />
-          <MenuList>
-            <MenuItem
-              icon={<FaUserEdit />}
-              onClick={() => {
-                setSelectedAppointment(row)
-                setOpenRescheduleDialog(true)
-              }}
+        {canManageAttendances() && (
+          <Tooltip title="Attend">
+            <Button
+              colorScheme="blue"
+              variant="solid"
+              marginRight={2}
+              onClick={() =>
+                router.push(`/dashboard/attendance/${row.patientId}`)
+              }
+              disabled={professional?.id !== row.professionalId}
             >
-              Reschedule
-            </MenuItem>
-            <MenuItem
-              icon={<FaUserTimes />}
-              onClick={() => {
-                setSelectedAppointment(row)
-                setOpenCancelDialog(true)
-              }}
+              {row.professional.type === ProfessionalType.NURSE ? (
+                <FaUserNurse />
+              ) : (
+                <FaStethoscope />
+              )}
+            </Button>
+          </Tooltip>
+        )}
+        {canManageAppointments() && (
+          <Tooltip title="Not attended">
+            <Button
+              colorScheme="red"
+              variant="outline"
+              marginRight={2}
+              onClick={() => handleNotAttended(row)}
             >
-              Cancel
-            </MenuItem>
-          </MenuList>
-        </Menu>
+              <FaUserSlash />
+            </Button>
+          </Tooltip>
+        )}
+        {(canManageAppointments() || canManageMedicalRecords()) && (
+          <Menu>
+            <Tooltip title="More">
+              <MenuButton
+                as={IconButton}
+                aria-label="Options"
+                icon={<BiDotsVerticalRounded />}
+                variant="outline"
+              />
+            </Tooltip>
+            <MenuList>
+              {canManageAppointments() && (
+                <>
+                  <MenuItem
+                    icon={<FaUserEdit />}
+                    onClick={() => {
+                      setSelectedAppointment({ ...row, date: undefined })
+                      setOpenRescheduleDialog(true)
+                    }}
+                  >
+                    Reschedule appointment
+                  </MenuItem>
+                  <MenuItem
+                    icon={<FaUserTimes />}
+                    onClick={() => {
+                      setSelectedAppointment(row)
+                      setOpenCancelDialog(true)
+                    }}
+                  >
+                    Cancel appointment
+                  </MenuItem>
+                </>
+              )}
+              {canManageMedicalRecords() && (
+                <MenuItem
+                  icon={<FaHistory />}
+                  onClick={() => router.push('/dashboard/medical-record')}
+                >
+                  Medical Records
+                </MenuItem>
+              )}
+            </MenuList>
+          </Menu>
+        )}
       </Flex>
     )
   }
@@ -215,50 +294,78 @@ const Dashboard = ({ attendances }: DashboardProps) => {
         <Toolbar
           className="mb-4 bg-white"
           left={
-            <Button
-              type="button"
-              colorScheme="gray"
-              onClick={handleExportToExcel}
-            >
-              <SiMicrosoftexcel />
-            </Button>
+            <Tooltip title="Export to Excel">
+              <Button
+                type="button"
+                colorScheme="gray"
+                onClick={handleExportToExcel}
+              >
+                <SiMicrosoftexcel />
+              </Button>
+            </Tooltip>
           }
           right={
-            <Button
-              colorScheme="green"
-              variant="solid"
-              onClick={() => setOpenCreateDialog(true)}
-            >
-              <FaUserPlus />
-            </Button>
+            <>
+              {canManageAppointments() && (
+                <Tooltip title="Create new appointment">
+                  <Button
+                    colorScheme="green"
+                    variant="solid"
+                    onClick={async () => {
+                      await fetchPatients()
+                      await fetchProfessionals()
+                      setOpenCreateDialog(true)
+                    }}
+                  >
+                    <GoPlus />
+                  </Button>
+                </Tooltip>
+              )}
+            </>
           }
         />
 
         <DataTable
           ref={table}
-          value={listOfAttendances}
           dataKey="id"
+          value={listOfAttendances}
+          header={
+            <div className="flex justify-content-between align-items-center">
+              <span className="p-input-icon-left">
+                <i className="pi pi-search" />
+                <InputText
+                  type="search"
+                  onInput={(e: any) => setGlobalFilter(e.target.value)}
+                  placeholder="Search..."
+                />
+              </span>
+            </div>
+          }
+          globalFilter={globalFilter}
+          emptyMessage="No appointments found"
           paginator
           rows={10}
           rowsPerPageOptions={[5, 10, 25]}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} appointments"
-          globalFilter={globalFilter}
           responsiveLayout="scroll"
+          stripedRows
+          rowHover
         >
           <Column field="patient.name" header="Patient" sortable />
           <Column field="professional.name" header="Professional" sortable />
           <Column
             field="date"
             header="Date"
+            sortable
             body={row => {
               return format(new Date(row.date), 'PPPPpp')
             }}
-            sortable
           />
           <Column
             field="status"
             header="Status"
+            sortable
             body={row => {
               let color = 'red'
               if (row.status === AttendanceStatus.IN_PROGRESS) {
@@ -281,146 +388,179 @@ const Dashboard = ({ attendances }: DashboardProps) => {
                 </Tag>
               )
             }}
-            sortable
           />
           <Column body={actionButtons} exportable={false} />
         </DataTable>
       </Box>
 
-      <Dialog
-        visible={openCreateDialog}
-        style={{ width: '450px' }}
-        header="Create appointment"
-        modal
-        className="p-fluid"
-        footer={
-          <React.Fragment>
-            <Button
-              leftIcon={<FaTimes />}
-              colorScheme="red"
-              onClick={() => {
-                setErrors(undefined)
-                setSelectedAppointment(undefined)
-                setOpenCreateDialog(false)
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              leftIcon={<FaCheck />}
-              colorScheme="green"
-              onClick={() => {
-                setErrors(undefined)
-                console.log('save')
-              }}
-            >
-              Create
-            </Button>
-          </React.Fragment>
-        }
-        onHide={() => {
-          setErrors(undefined)
-          setSelectedAppointment(undefined)
-          setOpenCreateDialog(false)
-        }}
+      <Modal
+        title="Create appointment"
+        isVisible={openCreateDialog}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmit(handleCreateAttendance)}
       >
-        <Select placeholder="Select attendance type">
-          {Object.keys(AttendanceType).map((key, index) => {
-            return (
-              <option key={index} value={key}>
-                {key}
-              </option>
-            )
-          })}
-        </Select>
-        <Select placeholder="Select patient">
-          {Object.keys(AttendanceType).map((key, index) => {
-            return (
-              <option key={index} value={key}>
-                {key}
-              </option>
-            )
-          })}
-        </Select>
-        <Calendar
-          id="date"
-          name="date"
-          value={new Date(selectedAppointment?.date ?? '')}
-          onChange={e => onInputChange(e, 'date')}
-          disabledDays={[0, 6]}
-          showIcon
-          showTime
-          showButtonBar
-        />
-      </Dialog>
+        <FormControl isInvalid={errors.type}>
+          <FormLabel htmlFor="type">Type</FormLabel>
+          <Select
+            id="type"
+            placeholder="Select an option"
+            {...register('type', {
+              required: 'Attendance type is required',
+            })}
+          >
+            {Object.keys(AttendanceType).map((key, index) => {
+              return (
+                <option key={index} value={key}>
+                  {key}
+                </option>
+              )
+            })}
+          </Select>
+          <FormErrorMessage>
+            {errors.type && errors.type.message}
+          </FormErrorMessage>
+        </FormControl>
 
-      <Dialog
-        visible={openCancelDialog}
-        style={{ width: '450px' }}
-        header="Cancel appointment"
-        modal
-        footer={
-          <React.Fragment>
-            <Button
-              leftIcon={<FaTimes />}
-              colorScheme="red"
-              onClick={() => {
-                setErrors(undefined)
-                setSelectedAppointment(undefined)
-                setOpenCancelDialog(false)
-              }}
-            >
-              No
-            </Button>
-            <Button
-              leftIcon={<FaCheck />}
-              colorScheme="green"
-              onClick={e => {
-                if (!e.currentTarget.value) {
-                  setErrors({
-                    cancellationReason: {
-                      message: 'Cancellation reason is required',
-                    },
-                  })
-                } else {
-                  handleCancelAppointment()
+        <FormControl isInvalid={errors.professional}>
+          <FormLabel htmlFor="professional">Professional</FormLabel>
+          <Select
+            id="professional"
+            placeholder="Select a professional"
+            {...register('professional', {
+              required: 'Choose a professional is required',
+            })}
+          >
+            {listOfProfessionals
+              .filter(professional => {
+                if (selectedAppointment.type === AttendanceType.TRIAGE) {
+                  return professional.type === ProfessionalType.NURSE
                 }
-              }}
-            >
-              Yes
-            </Button>
-          </React.Fragment>
-        }
-        onHide={() => {
-          setErrors(undefined)
-          setSelectedAppointment(undefined)
-          setOpenCancelDialog(false)
-        }}
+                return professional.type === ProfessionalType.DOCTOR
+              })
+              .map(({ id, name }) => {
+                return (
+                  <option key={id} value={id}>
+                    {name}
+                  </option>
+                )
+              })}
+          </Select>
+          <FormErrorMessage>
+            {errors.professional && errors.professional.message}
+          </FormErrorMessage>
+        </FormControl>
+
+        <FormControl isInvalid={errors.patient}>
+          <FormLabel htmlFor="patient">Patient</FormLabel>
+          <Select
+            id="patient"
+            placeholder="Select a patient"
+            {...register('patient', {
+              required: 'Choose a patient is required',
+            })}
+          >
+            {listOfPatients.map(({ id, name }) => {
+              return (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              )
+            })}
+          </Select>
+          <FormErrorMessage>
+            {errors.patient && errors.patient.message}
+          </FormErrorMessage>
+        </FormControl>
+
+        <FormControl isInvalid={errors.date}>
+          <FormLabel htmlFor="date">Date</FormLabel>
+          <Calendar
+            id="date"
+            value={selectedAppointment?.date}
+            minDate={new Date()}
+            dateFormat="MM dd, yy"
+            disabledDays={[0, 6]}
+            hourFormat="12"
+            showTime
+            readOnlyInput
+            {...register('date', {
+              required: 'Date is required',
+            })}
+          />
+          <FormErrorMessage>
+            {errors.date && errors.date.message}
+          </FormErrorMessage>
+        </FormControl>
+      </Modal>
+
+      <Modal
+        title="Reschedule appointment"
+        isConfirmation
+        isVisible={openRescheduleDialog}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmit(handleUpdateAttendance)}
       >
-        <Stack align="center">
-          <BsExclamationTriangle size={50} color="orange" />
-          {selectedAppointment && (
+        <Stack align="stretch">
+          <HStack align="center">
+            <BsFillInfoCircleFill size={30} color="blue" />
+            <span>
+              Select a date for the next attendance for patient{' '}
+              <b>{selectedAppointment?.patient?.name}</b>.
+            </span>
+          </HStack>
+          <FormControl isInvalid={errors.date}>
+            <Calendar
+              id="date"
+              value={selectedAppointment?.date}
+              minDate={new Date()}
+              dateFormat="MM dd, yy"
+              disabledDays={[0, 6]}
+              hourFormat="12"
+              showTime
+              readOnlyInput
+              {...register('date', {
+                required: 'Date is required',
+              })}
+            />
+            <FormErrorMessage>
+              {errors.date && errors.date.message}
+            </FormErrorMessage>
+          </FormControl>
+        </Stack>
+      </Modal>
+
+      <Modal
+        title="Cancel appointment"
+        isConfirmation
+        isVisible={openCancelDialog}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmit(handleUpdateAttendance)}
+      >
+        <Stack align="stretch">
+          <HStack align="center">
+            <BsExclamationTriangle size={40} color="orange" />
             <span>
               Are you sure you want to cancel the appointment of patient{' '}
-              <b>{selectedAppointment.patient?.name}</b>?
+              <b>{selectedAppointment?.patient?.name}</b>?
             </span>
-          )}
-          <Textarea
-            id="cancellationReason"
-            name="cancellationReason"
-            onChange={e => onInputChange(e, 'cancellationReason')}
-            placeholder="Describe the reason for the cancellation..."
-            size="sm"
-            resize="none"
-            isInvalid={!!errors?.['cancellationReason']}
-          />
-          {!!errors?.['cancellationReason'] && (
+          </HStack>
+
+          <FormControl isInvalid={errors.cancellationReason}>
+            <Textarea
+              id="cancellationReason"
+              placeholder="Describe the reason for the cancellation..."
+              size="sm"
+              resize="none"
+              {...register('cancellationReason', {
+                required: 'This is required',
+              })}
+            />
             <FormErrorMessage>
-              {errors?.['cancellationReason']?.message}
+              {errors.cancellationReason && errors.cancellationReason.message}
             </FormErrorMessage>
-          )}
+          </FormControl>
         </Stack>
-      </Dialog>
+      </Modal>
     </>
   )
 }

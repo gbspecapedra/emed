@@ -7,11 +7,11 @@ export type Attendance = {
   type: AttendanceType
   professionalId: number
   patientId: number
-  date: string
+  date: Date
   status: AttendanceStatus
   cancellationReason?: string
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
 
   patient: Pick<Patient, 'name'>
   professional: Pick<Professional, 'name'>

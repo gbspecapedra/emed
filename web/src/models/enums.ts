@@ -1,5 +1,6 @@
 export enum ProfessionalType {
   ADMIN = 'ADMIN',
+  RECEPTIONIST = 'RECEPTIONIST',
   DOCTOR = 'DOCTOR',
   NURSE = 'NURSE',
 }

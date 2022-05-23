@@ -20,40 +20,35 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
+  LinkProps,
 } from '@chakra-ui/react'
 import React, { ReactNode } from 'react'
 import { IconType } from 'react-icons'
 import { AiOutlineUser } from 'react-icons/ai'
-import {
-  FiHome,
-  FiTrendingUp,
-  FiCompass,
-  FiStar,
-  FiSettings,
-  FiMenu,
-  FiBell,
-  FiChevronDown,
-} from 'react-icons/fi'
+import { FaFileMedicalAlt } from 'react-icons/fa'
+import { FiHome, FiMenu, FiBell, FiChevronDown, FiUsers } from 'react-icons/fi'
+import { MdOutlineMedicalServices } from 'react-icons/md'
 import { useAuth } from '../../services/contexts/AuthContext'
+import { ActiveLink } from './ActiveLink'
 
 interface LinkItemProps {
   name: string
   icon: IconType
-  href?: string
+  href: string
 }
 const LinkItems: Array<LinkItemProps> = [
   { name: 'Home', icon: FiHome, href: '/dashboard' },
-  { name: 'Trending', icon: FiTrendingUp },
-  { name: 'Explore', icon: FiCompass },
-  { name: 'Favourites', icon: FiStar },
-  { name: 'Settings', icon: FiSettings },
+  { name: 'Patients', icon: FiUsers, href: '/dashboard/patients' },
+  { name: 'Professionals', icon: FiUsers, href: '/dashboard/professionals' },
+  { name: 'Exams', icon: FaFileMedicalAlt, href: '/dashboard/exams' },
+  {
+    name: 'Medicines',
+    icon: MdOutlineMedicalServices,
+    href: '/dashboard/medicines',
+  },
 ]
 
-export default function SidebarWithHeader({
-  children,
-}: {
-  children: ReactNode
-}) {
+export default function Navigation({ children }: { children: ReactNode }) {
   const { isOpen, onOpen, onClose } = useDisclosure()
   return (
     <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
@@ -114,44 +109,45 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
   )
 }
 
-interface NavItemProps extends FlexProps {
+interface NavItemProps extends LinkProps {
   icon: IconType
-  href?: string
+  href: string
   children: ReactNode
 }
 const NavItem = ({ icon, href, children, ...rest }: NavItemProps) => {
   return (
-    <Link
-      href={href ?? '#'}
-      style={{ textDecoration: 'none' }}
-      _focus={{ boxShadow: 'none' }}
-    >
-      <Flex
-        align="center"
-        p="4"
-        mx="4"
-        borderRadius="lg"
-        role="group"
-        cursor="pointer"
-        _hover={{
-          bg: 'cyan.400',
-          color: 'white',
-        }}
+    <ActiveLink href={href} passHref shouldMatchExactHref>
+      <Link
+        style={{ textDecoration: 'none' }}
+        _focus={{ boxShadow: 'none' }}
         {...rest}
       >
-        {icon && (
-          <Icon
-            mr="4"
-            fontSize="16"
-            _groupHover={{
-              color: 'white',
-            }}
-            as={icon}
-          />
-        )}
-        {children}
-      </Flex>
-    </Link>
+        <Flex
+          align="center"
+          p="4"
+          mx="4"
+          borderRadius="lg"
+          role="group"
+          cursor="pointer"
+          _hover={{
+            bg: 'cyan.400',
+            color: 'white',
+          }}
+        >
+          {icon && (
+            <Icon
+              mr="4"
+              fontSize="16"
+              _groupHover={{
+                color: 'white',
+              }}
+              as={icon}
+            />
+          )}
+          {children}
+        </Flex>
+      </Link>
+    </ActiveLink>
   )
 }
 
@@ -231,8 +227,6 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
               borderColor={useColorModeValue('gray.200', 'gray.700')}
             >
               <MenuItem>Profile</MenuItem>
-              <MenuItem>Settings</MenuItem>
-              <MenuItem>Billing</MenuItem>
               <MenuDivider />
               <MenuItem onClick={async () => await signOut()}>
                 Sign out

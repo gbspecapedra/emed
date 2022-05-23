@@ -2,7 +2,8 @@ import { ChakraProvider } from '@chakra-ui/react'
 import { NextPage } from 'next'
 import type { AppProps } from 'next/app'
 import type { ReactElement, ReactNode } from 'react'
-import SidebarWithHeader from '../components/navigation'
+
+import Navigation from '../components/navigation'
 import { AuthProvider } from '../services/contexts/AuthContext'
 import { theme } from '../styles/theme'
 
@@ -21,8 +22,7 @@ type AppPropsWithLayout = AppProps & {
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout =
-    Component.getLayout ??
-    (page => <SidebarWithHeader>{page}</SidebarWithHeader>)
+    Component.getLayout ?? (page => <Navigation>{page}</Navigation>)
 
   return (
     <ChakraProvider theme={theme}>

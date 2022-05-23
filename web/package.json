@@ -15,6 +15,7 @@
     "@emotion/styled": "^11",
     "axios": "^0.27.2",
     "date-fns": "^2.28.0",
+    "file-saver": "^2.0.5",
     "framer-motion": "^6",
     "next": "12.1.6",
     "nookies": "^2.5.2",
@@ -27,12 +28,13 @@
     "react-icons": "^4.3.1",
     "sweetalert2": "^11.4.14",
     "sweetalert2-react-content": "^5.0.0",
-    "yup": "^0.32.11"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@testing-library/dom": "^8.13.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.2.0",
+    "@types/file-saver": "^2.0.5",
     "@types/node": "17.0.33",
     "@types/react": "18.0.9",
     "@types/react-dom": "18.0.4",
