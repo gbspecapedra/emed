@@ -1,4 +1,4 @@
-export enum ProfessionalType {
+export enum ProfessionalRole {
   ADMIN = 'ADMIN',
   RECEPTIONIST = 'RECEPTIONIST',
   DOCTOR = 'DOCTOR',

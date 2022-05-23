@@ -14,9 +14,11 @@ import { Controller, useFormContext } from 'react-hook-form'
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai'
 import { IInputValidator } from '../../../models/interfaces/inputValidator.interface'
 
+type InputType = 'text' | 'email' | 'password' | 'number'
+
 interface IInputProps extends ChakraInputProps {
   name: string
-  type?: string
+  type?: InputType
   label?: string
   defaultValue?: string
   validators?: IInputValidator

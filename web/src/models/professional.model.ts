@@ -1,11 +1,10 @@
-import { ProfessionalType } from './enums'
+import { ProfessionalRole } from './enums'
 
 export type Professional = {
   id: number
-  type: ProfessionalType
+  role: ProfessionalRole
   name: string
-  registrationNumber?: number
-  registrationState?: string
+  registration?: string
   specialty?: string
   email: string
   password?: string
@@ -13,4 +12,7 @@ export type Professional = {
   active: boolean
   createdAt: string
   updatedAt: string
+
+  registrationNumber?: number
+  registrationState?: string
 }

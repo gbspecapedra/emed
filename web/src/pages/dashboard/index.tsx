@@ -50,7 +50,7 @@ import { Attendance } from '../../models/attendance.model'
 import {
   AttendanceStatus,
   AttendanceType,
-  ProfessionalType,
+  ProfessionalRole,
 } from '../../models/enums'
 import { Patient } from '../../models/patient.model'
 import { api } from '../../services/api'
@@ -62,7 +62,6 @@ import { EMED_TOKEN, saveAsExcelFile } from '../../utils'
 
 interface DashboardProps {
   attendances: Attendance[]
-  totalCount: number
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ attendances }) => {
@@ -220,7 +219,7 @@ const Dashboard: React.FC<DashboardProps> = ({ attendances }) => {
               }
               disabled={professional?.id !== row.professionalId}
             >
-              {row.professional.type === ProfessionalType.NURSE ? (
+              {row.professional.type === ProfessionalRole.NURSE ? (
                 <FaUserNurse />
               ) : (
                 <FaStethoscope />
@@ -433,9 +432,9 @@ const Dashboard: React.FC<DashboardProps> = ({ attendances }) => {
             {listOfProfessionals
               .filter(professional => {
                 if (selectedAppointment.type === AttendanceType.TRIAGE) {
-                  return professional.type === ProfessionalType.NURSE
+                  return professional.role === ProfessionalRole.NURSE
                 }
-                return professional.type === ProfessionalType.DOCTOR
+                return professional.role === ProfessionalRole.DOCTOR
               })
               .map(({ id, name }) => {
                 return (
@@ -584,6 +583,6 @@ export const getServerSideProps: GetServerSideProps = async ctx => {
   const { data } = await apiClient.get('/attendances')
 
   return {
-    props: { attendances: data, totalCount: data.length },
+    props: { attendances: data },
   }
 }

@@ -22,6 +22,7 @@ import {
   MenuList,
   LinkProps,
 } from '@chakra-ui/react'
+import { useRouter } from 'next/router'
 import React, { ReactNode } from 'react'
 import { IconType } from 'react-icons'
 import { AiOutlineUser } from 'react-icons/ai'
@@ -155,6 +156,7 @@ interface MobileProps extends FlexProps {
   onOpen: () => void
 }
 const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
+  const router = useRouter()
   const { professional, signOut } = useAuth()
 
   return (
@@ -214,7 +216,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                 >
                   <Text fontSize="sm">{professional?.name}</Text>
                   <Text fontSize="xs" color="gray.600">
-                    {professional?.type}
+                    {professional?.role}
                   </Text>
                 </VStack>
                 <Box display={{ base: 'none', md: 'flex' }}>
@@ -226,7 +228,13 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
               bg={useColorModeValue('white', 'gray.900')}
               borderColor={useColorModeValue('gray.200', 'gray.700')}
             >
-              <MenuItem>Profile</MenuItem>
+              <MenuItem
+                onClick={() =>
+                  router.push(`/dashboard/professionals/${professional?.id}`)
+                }
+              >
+                Profile
+              </MenuItem>
               <MenuDivider />
               <MenuItem onClick={async () => await signOut()}>
                 Sign out
