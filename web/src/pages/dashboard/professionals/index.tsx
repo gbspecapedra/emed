@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Flex,
   IconButton,
@@ -9,17 +8,13 @@ import {
   MenuList,
   Tag,
   TagLabel,
-  useDisclosure,
 } from '@chakra-ui/react'
 import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import { parseCookies } from 'nookies'
 import { Column } from 'primereact/column'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
-import { DataTable } from 'primereact/datatable'
-import { InputText } from 'primereact/inputtext'
-import { Toolbar } from 'primereact/toolbar'
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { BiDotsVerticalRounded } from 'react-icons/bi'
 import {
   FaTrashAlt,
@@ -28,6 +23,7 @@ import {
   FaUserPlus,
   FaUserTimes,
 } from 'react-icons/fa'
+import Table from '../../../components/table'
 import Tooltip from '../../../components/tooltip'
 import { Professional } from '../../../models'
 import { api } from '../../../services/api'
@@ -37,20 +33,15 @@ import { useRoles } from '../../../services/hooks/useRoles'
 import { formatProfessional } from '../../../services/professionals'
 import { EMED_TOKEN } from '../../../utils'
 
-interface IProfessionalProps {
+interface IProfessionalsProps {
   professionals: Professional[]
 }
 
-const Professionals: React.FC<IProfessionalProps> = ({ professionals }) => {
+const Professionals: React.FC<IProfessionalsProps> = ({ professionals }) => {
   const router = useRouter()
   const notification = useNotification()
   const { isAdmin } = useRoles()
-  const table = useRef(null)
 
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const cancelRef = React.useRef()
-
-  const [globalFilter, setGlobalFilter] = useState(null)
   const [listOfProfessionals, setListOfProfessionals] =
     useState<Professional[]>(professionals)
 
@@ -157,74 +148,44 @@ const Professionals: React.FC<IProfessionalProps> = ({ professionals }) => {
   return (
     <>
       <ConfirmDialog />
-      <Box>
-        <Toolbar
-          className="mb-4 bg-white"
-          right={
-            <Tooltip title="Create new professional">
-              <Button
-                colorScheme="green"
+      <Table
+        values={listOfProfessionals}
+        header={
+          <Tooltip title="Create new professional">
+            <Button
+              colorScheme="green"
+              variant="solid"
+              onClick={() => router.push(`/dashboard/professionals/create`)}
+            >
+              <FaUserPlus />
+            </Button>
+          </Tooltip>
+        }
+      >
+        <Column field="registration" header="Code" sortable />
+        <Column field="role" header="Role" sortable />
+        <Column field="name" header="Name" sortable />
+        <Column field="specialty" header="Specialty" sortable />
+        <Column field="email" header="Email" />
+        <Column
+          field="active"
+          sortable
+          body={row => {
+            return (
+              <Tag
+                size="sm"
+                key={row.id}
+                borderRadius="base"
                 variant="solid"
-                onClick={() => router.push(`/dashboard/professionals/create`)}
+                colorScheme={row.active ? 'green' : 'red'}
               >
-                <FaUserPlus />
-              </Button>
-            </Tooltip>
-          }
+                <TagLabel>{row.active ? 'ACTIVE' : 'DISABLED'}</TagLabel>
+              </Tag>
+            )
+          }}
         />
-
-        <DataTable
-          ref={table}
-          dataKey="id"
-          value={listOfProfessionals}
-          header={
-            <div className="flex justify-content-between align-items-center">
-              <span className="p-input-icon-left">
-                <i className="pi pi-search" />
-                <InputText
-                  type="search"
-                  onInput={(e: any) => setGlobalFilter(e.target.value)}
-                  placeholder="Search..."
-                />
-              </span>
-            </div>
-          }
-          globalFilter={globalFilter}
-          emptyMessage="No professionals found"
-          paginator
-          rows={10}
-          rowsPerPageOptions={[5, 10, 25]}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} professionals"
-          responsiveLayout="scroll"
-          stripedRows
-          rowHover
-        >
-          <Column field="registration" header="Code" sortable />
-          <Column field="role" header="Role" sortable />
-          <Column field="name" header="Name" sortable />
-          <Column field="specialty" header="Specialty" sortable />
-          <Column field="email" header="Email" />
-          <Column
-            field="active"
-            sortable
-            body={row => {
-              return (
-                <Tag
-                  size="sm"
-                  key={row.id}
-                  borderRadius="base"
-                  variant="solid"
-                  colorScheme={row.active ? 'green' : 'red'}
-                >
-                  <TagLabel>{row.active ? 'ACTIVE' : 'DISABLED'}</TagLabel>
-                </Tag>
-              )
-            }}
-          />
-          <Column body={actionButtons} exportable={false} />
-        </DataTable>
-      </Box>
+        <Column body={actionButtons} exportable={false} />
+      </Table>
     </>
   )
 }

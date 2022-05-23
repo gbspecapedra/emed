@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Flex,
   FormControl,
@@ -24,9 +23,6 @@ import { parseCookies } from 'nookies'
 
 import { Calendar } from 'primereact/calendar'
 import { Column } from 'primereact/column'
-import { DataTable } from 'primereact/datatable'
-import { InputText } from 'primereact/inputtext'
-import { Toolbar } from 'primereact/toolbar'
 import React, { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -43,6 +39,7 @@ import {
 import { GoPlus } from 'react-icons/go'
 import { SiMicrosoftexcel } from 'react-icons/si'
 import Modal from '../../components/modal'
+import Table from '../../components/table'
 import Tooltip from '../../components/tooltip'
 import { Professional } from '../../models'
 
@@ -60,11 +57,11 @@ import { useNotification } from '../../services/hooks/useNotification'
 import { useRoles } from '../../services/hooks/useRoles'
 import { EMED_TOKEN, saveAsExcelFile } from '../../utils'
 
-interface DashboardProps {
+interface IDashboardProps {
   attendances: Attendance[]
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ attendances }) => {
+const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
   const { professional } = useAuth()
   const router = useRouter()
   const {
@@ -289,10 +286,10 @@ const Dashboard: React.FC<DashboardProps> = ({ attendances }) => {
 
   return (
     <>
-      <Box>
-        <Toolbar
-          className="mb-4 bg-white"
-          left={
+      <Table
+        values={listOfAttendances}
+        header={
+          <>
             <Tooltip title="Export to Excel">
               <Button
                 type="button"
@@ -302,95 +299,63 @@ const Dashboard: React.FC<DashboardProps> = ({ attendances }) => {
                 <SiMicrosoftexcel />
               </Button>
             </Tooltip>
-          }
-          right={
-            <>
-              {canManageAppointments() && (
-                <Tooltip title="Create new appointment">
-                  <Button
-                    colorScheme="green"
-                    variant="solid"
-                    onClick={async () => {
-                      await fetchPatients()
-                      await fetchProfessionals()
-                      setOpenCreateDialog(true)
-                    }}
-                  >
-                    <GoPlus />
-                  </Button>
-                </Tooltip>
-              )}
-            </>
-          }
-        />
-
-        <DataTable
-          ref={table}
-          dataKey="id"
-          value={listOfAttendances}
-          header={
-            <div className="flex justify-content-between align-items-center">
-              <span className="p-input-icon-left">
-                <i className="pi pi-search" />
-                <InputText
-                  type="search"
-                  onInput={(e: any) => setGlobalFilter(e.target.value)}
-                  placeholder="Search..."
-                />
-              </span>
-            </div>
-          }
-          globalFilter={globalFilter}
-          emptyMessage="No appointments found"
-          paginator
-          rows={10}
-          rowsPerPageOptions={[5, 10, 25]}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} appointments"
-          responsiveLayout="scroll"
-          stripedRows
-          rowHover
-        >
-          <Column field="patient.name" header="Patient" sortable />
-          <Column field="professional.name" header="Professional" sortable />
-          <Column
-            field="date"
-            header="Date"
-            sortable
-            body={row => {
-              return format(new Date(row.date), 'PPPPpp')
-            }}
-          />
-          <Column
-            field="status"
-            header="Status"
-            sortable
-            body={row => {
-              let color = 'red'
-              if (row.status === AttendanceStatus.IN_PROGRESS) {
-                color = 'yellow'
-              } else if (row.status === AttendanceStatus.CONFIRMED) {
-                color = 'green'
-              } else if (row.status === AttendanceStatus.DONE) {
-                color = 'gray'
-              }
-
-              return (
-                <Tag
-                  size="md"
-                  key={row.id}
-                  borderRadius="full"
+            {canManageAppointments() && (
+              <Tooltip title="Create new appointment">
+                <Button
+                  colorScheme="green"
                   variant="solid"
-                  colorScheme={color}
+                  onClick={async () => {
+                    await fetchPatients()
+                    await fetchProfessionals()
+                    setOpenCreateDialog(true)
+                  }}
                 >
-                  <TagLabel>{row.status}</TagLabel>
-                </Tag>
-              )
-            }}
-          />
-          <Column body={actionButtons} exportable={false} />
-        </DataTable>
-      </Box>
+                  <GoPlus />
+                </Button>
+              </Tooltip>
+            )}
+          </>
+        }
+      >
+        <Column field="patient.name" header="Patient" sortable />
+        <Column field="professional.name" header="Professional" sortable />
+        <Column
+          field="date"
+          header="Date"
+          sortable
+          body={row => {
+            return format(new Date(row.date), 'PPPPpp')
+          }}
+        />
+        <Column
+          field="status"
+          header="Status"
+          sortable
+          body={row => {
+            let color = 'red'
+            if (row.status === AttendanceStatus.IN_PROGRESS) {
+              color = 'yellow'
+            } else if (row.status === AttendanceStatus.CONFIRMED) {
+              color = 'green'
+            } else if (row.status === AttendanceStatus.DONE) {
+              color = 'gray'
+            }
+
+            return (
+              <Tag
+                size="md"
+                key={row.id}
+                borderRadius="full"
+                variant="solid"
+                colorScheme={color}
+              >
+                <TagLabel>{row.status}</TagLabel>
+              </Tag>
+            )
+          }}
+        />
+        <Column body={actionButtons} exportable={false} />
+      </Table>
 
       <Modal
         title="Create appointment"

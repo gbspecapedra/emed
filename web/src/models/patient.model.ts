@@ -1,3 +1,6 @@
+import { Attendance } from './attendance.model'
+import { HealthPlan } from './plan.model'
+
 export type Patient = {
   id: number
   name: string
@@ -18,4 +21,7 @@ export type Patient = {
   active: boolean
   createdAt: string
   updatedAt: string
+
+  healthPlan: HealthPlan
+  attendances: Attendance[]
 }
