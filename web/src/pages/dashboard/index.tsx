@@ -23,7 +23,7 @@ import { parseCookies } from 'nookies'
 
 import { Calendar } from 'primereact/calendar'
 import { Column } from 'primereact/column'
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { BiDotsVerticalRounded } from 'react-icons/bi'
@@ -64,15 +64,9 @@ interface IDashboardProps {
 const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
   const { professional } = useAuth()
   const router = useRouter()
-  const {
-    canManageAppointments,
-    canManageAttendances,
-    canManageMedicalRecords,
-  } = useRoles()
+  const { canManageAppointments, canManageAttendances } = useRoles()
   const notification = useNotification()
-  const table = useRef(null)
 
-  const [globalFilter, setGlobalFilter] = useState(null)
   const [selectedAppointment, setSelectedAppointment] = useState<Attendance>(
     {} as Attendance,
   )
@@ -91,7 +85,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
   const {
     register,
     handleSubmit,
-    formState: { isValid, errors },
+    formState: { errors },
   } = useForm()
 
   async function refetchAttendances() {
@@ -205,7 +199,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
   const actionButtons = (row: any) => {
     return (
       <Flex flexDirection="row" justifyContent="end">
-        {canManageAttendances() && (
+        {canManageAttendances && (
           <Tooltip title="Attend">
             <Button
               colorScheme="blue"
@@ -216,7 +210,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
               }
               disabled={professional?.id !== row.professionalId}
             >
-              {row.professional.type === ProfessionalRole.NURSE ? (
+              {row.professional.role === ProfessionalRole.NURSE ? (
                 <FaUserNurse />
               ) : (
                 <FaStethoscope />
@@ -224,7 +218,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
             </Button>
           </Tooltip>
         )}
-        {canManageAppointments() && (
+        {canManageAppointments && (
           <Tooltip title="Not attended">
             <Button
               colorScheme="red"
@@ -236,50 +230,47 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
             </Button>
           </Tooltip>
         )}
-        {(canManageAppointments() || canManageMedicalRecords()) && (
-          <Menu>
-            <Tooltip title="More">
-              <MenuButton
-                as={IconButton}
-                aria-label="Options"
-                icon={<BiDotsVerticalRounded />}
-                variant="outline"
-              />
-            </Tooltip>
-            <MenuList>
-              {canManageAppointments() && (
-                <>
-                  <MenuItem
-                    icon={<FaUserEdit />}
-                    onClick={() => {
-                      setSelectedAppointment({ ...row, date: undefined })
-                      setOpenRescheduleDialog(true)
-                    }}
-                  >
-                    Reschedule appointment
-                  </MenuItem>
-                  <MenuItem
-                    icon={<FaUserTimes />}
-                    onClick={() => {
-                      setSelectedAppointment(row)
-                      setOpenCancelDialog(true)
-                    }}
-                  >
-                    Cancel appointment
-                  </MenuItem>
-                </>
-              )}
-              {canManageMedicalRecords() && (
+
+        <Menu>
+          <Tooltip title="More">
+            <MenuButton
+              as={IconButton}
+              aria-label="Options"
+              icon={<BiDotsVerticalRounded />}
+              variant="outline"
+            />
+          </Tooltip>
+          <MenuList>
+            {canManageAppointments && (
+              <>
                 <MenuItem
-                  icon={<FaHistory />}
-                  onClick={() => router.push('/dashboard/medical-record')}
+                  icon={<FaUserEdit />}
+                  onClick={() => {
+                    setSelectedAppointment({ ...row, date: undefined })
+                    setOpenRescheduleDialog(true)
+                  }}
                 >
-                  Medical Records
+                  Reschedule appointment
                 </MenuItem>
-              )}
-            </MenuList>
-          </Menu>
-        )}
+                <MenuItem
+                  icon={<FaUserTimes />}
+                  onClick={() => {
+                    setSelectedAppointment(row)
+                    setOpenCancelDialog(true)
+                  }}
+                >
+                  Cancel appointment
+                </MenuItem>
+              </>
+            )}
+            <MenuItem
+              icon={<FaHistory />}
+              onClick={() => router.push('/dashboard/medical-record')}
+            >
+              Medical Records
+            </MenuItem>
+          </MenuList>
+        </Menu>
       </Flex>
     )
   }
@@ -299,7 +290,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
                 <SiMicrosoftexcel />
               </Button>
             </Tooltip>
-            {canManageAppointments() && (
+            {canManageAppointments && (
               <Tooltip title="Create new appointment">
                 <Button
                   colorScheme="green"

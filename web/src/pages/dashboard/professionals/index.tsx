@@ -16,6 +16,7 @@ import { Column } from 'primereact/column'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 import React, { useState } from 'react'
 import { BiDotsVerticalRounded } from 'react-icons/bi'
+import { BsJournalMedical } from 'react-icons/bs'
 import {
   FaTrashAlt,
   FaUserCheck,
@@ -91,55 +92,70 @@ const Professionals: React.FC<IProfessionalsProps> = ({ professionals }) => {
   const actionButtons = (row: any) => {
     return (
       <Flex flexDirection="row" justifyContent="end">
-        <Tooltip title="Edit a professional">
+        <Tooltip title="Visualize a professional">
           <Button
-            colorScheme="blue"
-            variant="solid"
-            marginRight={2}
-            onClick={() => router.push(`/dashboard/professionals/${row.id}`)}
-          >
-            <FaUserEdit />
-          </Button>
-        </Tooltip>
-
-        <Tooltip title={row.active ? 'Deactivate' : 'Activate'}>
-          <Button
-            colorScheme={row.active ? 'red' : 'green'}
+            colorScheme="gray"
             variant="outline"
             marginRight={2}
-            onClick={() => handleUpdateStatus(row.id, !row.active)}
+            onClick={() => router.push(`/dashboard/patients/view/${row.id}`)}
           >
-            {row.active ? <FaUserTimes /> : <FaUserCheck />}
+            <BsJournalMedical />
           </Button>
         </Tooltip>
 
         {isAdmin && (
-          <Menu>
-            <Tooltip title="More">
-              <MenuButton
-                as={IconButton}
-                aria-label="Options"
-                icon={<BiDotsVerticalRounded />}
-                variant="outline"
-              />
-            </Tooltip>
-            <MenuList>
-              <MenuItem
-                icon={<FaTrashAlt />}
-                onClick={() => {
-                  confirmDialog({
-                    message: `Are you sure? You can't undo this action afterwards.`,
-                    header: 'Delete Professional',
-                    icon: 'pi pi-exclamation-triangle',
-                    acceptClassName: 'p-button-danger',
-                    accept: () => handleDeleteProfessional(row.id),
-                  })
-                }}
+          <>
+            <Tooltip title="Edit a professional">
+              <Button
+                colorScheme="blue"
+                variant="solid"
+                marginRight={2}
+                onClick={() =>
+                  router.push(`/dashboard/professionals/${row.id}`)
+                }
               >
-                Delete
-              </MenuItem>
-            </MenuList>
-          </Menu>
+                <FaUserEdit />
+              </Button>
+            </Tooltip>
+
+            <Tooltip title={row.active ? 'Deactivate' : 'Activate'}>
+              <Button
+                colorScheme={row.active ? 'red' : 'green'}
+                variant="outline"
+                marginRight={2}
+                onClick={() => handleUpdateStatus(row.id, !row.active)}
+              >
+                {row.active ? <FaUserTimes /> : <FaUserCheck />}
+              </Button>
+            </Tooltip>
+
+            <Menu>
+              <Tooltip title="More">
+                <MenuButton
+                  as={IconButton}
+                  aria-label="Options"
+                  icon={<BiDotsVerticalRounded />}
+                  variant="outline"
+                />
+              </Tooltip>
+              <MenuList>
+                <MenuItem
+                  icon={<FaTrashAlt />}
+                  onClick={() => {
+                    confirmDialog({
+                      message: `Are you sure? You can't undo this action afterwards.`,
+                      header: 'Delete Professional',
+                      icon: 'pi pi-exclamation-triangle',
+                      acceptClassName: 'p-button-danger',
+                      accept: () => handleDeleteProfessional(row.id),
+                    })
+                  }}
+                >
+                  Delete
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </>
         )}
       </Flex>
     )
@@ -151,15 +167,19 @@ const Professionals: React.FC<IProfessionalsProps> = ({ professionals }) => {
       <Table
         values={listOfProfessionals}
         header={
-          <Tooltip title="Create new professional">
-            <Button
-              colorScheme="green"
-              variant="solid"
-              onClick={() => router.push(`/dashboard/professionals/create`)}
-            >
-              <FaUserPlus />
-            </Button>
-          </Tooltip>
+          <>
+            {isAdmin && (
+              <Tooltip title="Create new professional">
+                <Button
+                  colorScheme="green"
+                  variant="solid"
+                  onClick={() => router.push(`/dashboard/professionals/create`)}
+                >
+                  <FaUserPlus />
+                </Button>
+              </Tooltip>
+            )}
+          </>
         }
       >
         <Column field="registration" header="Code" sortable />
@@ -169,6 +189,7 @@ const Professionals: React.FC<IProfessionalsProps> = ({ professionals }) => {
         <Column field="email" header="Email" />
         <Column
           field="active"
+          header="Status"
           sortable
           body={row => {
             return (

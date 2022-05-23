@@ -14,8 +14,9 @@ import { useRouter } from 'next/router'
 import { parseCookies } from 'nookies'
 import { Column } from 'primereact/column'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { BiDotsVerticalRounded } from 'react-icons/bi'
+import { BsJournalMedical } from 'react-icons/bs'
 import {
   FaTrashAlt,
   FaUserCheck,
@@ -39,10 +40,8 @@ interface IPatientsProps {
 const Patients: React.FC<IPatientsProps> = ({ patients }) => {
   const router = useRouter()
   const notification = useNotification()
-  const { isAdmin } = useRoles()
-  const table = useRef(null)
+  const { isAdmin, canManagePatients } = useRoles()
 
-  const [globalFilter, setGlobalFilter] = useState(null)
   const [listOfPatients, setListOfPatients] = useState<Patient[]>(patients)
 
   async function refetchPatients() {
@@ -90,55 +89,70 @@ const Patients: React.FC<IPatientsProps> = ({ patients }) => {
   const actionButtons = (row: any) => {
     return (
       <Flex flexDirection="row" justifyContent="end">
-        <Tooltip title="Edit a patient">
+        <Tooltip title="Visualize a patient">
           <Button
-            colorScheme="blue"
-            variant="solid"
-            marginRight={2}
-            onClick={() => router.push(`/dashboard/patients/${row.id}`)}
-          >
-            <FaUserEdit />
-          </Button>
-        </Tooltip>
-
-        <Tooltip title={row.active ? 'Deactivate' : 'Activate'}>
-          <Button
-            colorScheme={row.active ? 'red' : 'green'}
+            colorScheme="gray"
             variant="outline"
             marginRight={2}
-            onClick={() => handleUpdateStatus(row.id, !row.active)}
+            onClick={() => router.push(`/dashboard/patients/view/${row.id}`)}
           >
-            {row.active ? <FaUserTimes /> : <FaUserCheck />}
+            <BsJournalMedical />
           </Button>
         </Tooltip>
 
-        {isAdmin && (
-          <Menu>
-            <Tooltip title="More">
-              <MenuButton
-                as={IconButton}
-                aria-label="Options"
-                icon={<BiDotsVerticalRounded />}
-                variant="outline"
-              />
-            </Tooltip>
-            <MenuList>
-              <MenuItem
-                icon={<FaTrashAlt />}
-                onClick={() => {
-                  confirmDialog({
-                    message: `Are you sure? You can't undo this action afterwards.`,
-                    header: 'Delete Professional',
-                    icon: 'pi pi-exclamation-triangle',
-                    acceptClassName: 'p-button-danger',
-                    accept: () => handleDeletePatient(row.id),
-                  })
-                }}
+        {canManagePatients && (
+          <>
+            <Tooltip title="Edit a patient">
+              <Button
+                colorScheme="blue"
+                variant="solid"
+                marginRight={2}
+                onClick={() => router.push(`/dashboard/patients/${row.id}`)}
               >
-                Delete
-              </MenuItem>
-            </MenuList>
-          </Menu>
+                <FaUserEdit />
+              </Button>
+            </Tooltip>
+
+            <Tooltip title={row.active ? 'Deactivate' : 'Activate'}>
+              <Button
+                colorScheme={row.active ? 'red' : 'green'}
+                variant="outline"
+                marginRight={2}
+                onClick={() => handleUpdateStatus(row.id, !row.active)}
+              >
+                {row.active ? <FaUserTimes /> : <FaUserCheck />}
+              </Button>
+            </Tooltip>
+
+            {isAdmin && (
+              <Menu>
+                <Tooltip title="More">
+                  <MenuButton
+                    as={IconButton}
+                    aria-label="Options"
+                    icon={<BiDotsVerticalRounded />}
+                    variant="outline"
+                  />
+                </Tooltip>
+                <MenuList>
+                  <MenuItem
+                    icon={<FaTrashAlt />}
+                    onClick={() => {
+                      confirmDialog({
+                        message: `Are you sure? You can't undo this action afterwards.`,
+                        header: 'Delete Professional',
+                        icon: 'pi pi-exclamation-triangle',
+                        acceptClassName: 'p-button-danger',
+                        accept: () => handleDeletePatient(row.id),
+                      })
+                    }}
+                  >
+                    Delete
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            )}
+          </>
         )}
       </Flex>
     )
@@ -150,15 +164,19 @@ const Patients: React.FC<IPatientsProps> = ({ patients }) => {
       <Table
         values={listOfPatients}
         header={
-          <Tooltip title="Create new patient">
-            <Button
-              colorScheme="green"
-              variant="solid"
-              onClick={() => router.push(`/dashboard/patients/create`)}
-            >
-              <FaUserPlus />
-            </Button>
-          </Tooltip>
+          <>
+            {canManagePatients && (
+              <Tooltip title="Create new patient">
+                <Button
+                  colorScheme="green"
+                  variant="solid"
+                  onClick={() => router.push(`/dashboard/patients/create`)}
+                >
+                  <FaUserPlus />
+                </Button>
+              </Tooltip>
+            )}
+          </>
         }
       >
         <Column field="socialNumber" header="Social Number" sortable />
@@ -167,6 +185,7 @@ const Patients: React.FC<IPatientsProps> = ({ patients }) => {
         <Column field="healthPlan.name" header="Health Plan" />
         <Column
           field="active"
+          header="Status"
           sortable
           body={row => {
             return (

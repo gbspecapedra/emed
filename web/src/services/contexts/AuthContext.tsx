@@ -7,6 +7,7 @@ import {
   useEffect,
 } from 'react'
 import { Professional } from '../../models'
+import { ProfessionalRole } from '../../models/enums'
 import { EMED_TOKEN, EMED_USER } from '../../utils'
 
 import { api } from '../api'
@@ -21,6 +22,7 @@ type AuthContextData = {
   resetPassword: (_email: Pick<AuthenticationInputs, 'email'>) => Promise<void>
   professional: Professional | null
   isAuthenticated: boolean
+  role?: ProfessionalRole
 }
 
 interface IAuthProviderProps {
@@ -34,6 +36,7 @@ export function AuthProvider({ children }: IAuthProviderProps) {
 
   const [professional, setProfessional] = useState<Professional | null>(null)
   const isAuthenticated = !!professional
+  const role = professional?.role
 
   useEffect(() => {
     const { [EMED_TOKEN]: token } = parseCookies()
@@ -126,6 +129,7 @@ export function AuthProvider({ children }: IAuthProviderProps) {
         resetPassword,
         professional,
         isAuthenticated,
+        role,
       }}
     >
       {children}
