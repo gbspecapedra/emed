@@ -5,7 +5,7 @@ export type Patient = {
   id: number
   name: string
   socialNumber: number
-  birthday: string
+  birthday: Date
   gender: string
   contact: string
   zipcode: string
@@ -17,10 +17,10 @@ export type Patient = {
   state: string
   country: string
   healthPlanId?: number
-  healthPlanExpiration?: string
+  healthPlanExpiration?: Date
   active: boolean
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
 
   healthPlan: HealthPlan
   attendances: Attendance[]

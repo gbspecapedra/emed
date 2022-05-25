@@ -1,3 +1,5 @@
+import { format } from 'date-fns'
+
 export * from './constants'
 
 export const saveAsExcelFile = (buffer: any, fileName: string) => {
@@ -16,4 +18,8 @@ export const saveAsExcelFile = (buffer: any, fileName: string) => {
       )
     }
   })
+}
+
+export const formatDate = (date?: Date, dateFormat?: string) => {
+  return date ? format(new Date(date), dateFormat ?? 'dd/MM/yyyy') : '-'
 }

@@ -97,7 +97,9 @@ const Professionals: React.FC<IProfessionalsProps> = ({ professionals }) => {
             colorScheme="gray"
             variant="outline"
             marginRight={2}
-            onClick={() => router.push(`/dashboard/patients/view/${row.id}`)}
+            onClick={() =>
+              router.push(`/dashboard/professionals/view/${row.id}`)
+            }
           >
             <BsJournalMedical />
           </Button>

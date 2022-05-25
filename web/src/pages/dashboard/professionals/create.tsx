@@ -1,11 +1,11 @@
-import { FormLabel, Heading, HStack } from '@chakra-ui/react'
-import { State } from 'country-state-city'
+import { HStack } from '@chakra-ui/react'
+import { Country, State } from 'country-state-city'
 import { GetServerSideProps } from 'next'
 import { parseCookies } from 'nookies'
 import React from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { Input } from '../../../components/form/input'
-import { FormLayout } from '../../../components/form/layout'
+import { FormLayout } from '../../../components/form/layout/FormLayout'
 import { Select } from '../../../components/form/select'
 import { ProfessionalRole } from '../../../models/enums'
 import { Specialty } from '../../../models/specialty.model'
@@ -22,6 +22,8 @@ interface IProfessionalInputs {
   registrationState?: string
   specialty?: string
   email: string
+
+  country?: string
 }
 
 interface ICreateProfessionalProps {
@@ -37,10 +39,10 @@ const CreateProfessional: React.FC<ICreateProfessionalProps> = ({
     mode: 'onChange',
   })
 
+  const watchCountry = methods.watch('country') ?? ''
   const watchRole = methods.watch('role')
-  const isRequiredForRole = !!watchRole?.match(
-    `^((?!(${ProfessionalRole.ADMIN}|${ProfessionalRole.RECEPTIONIST})).)*$`,
-  )
+  const isRequiredForRole =
+    watchRole === (ProfessionalRole.DOCTOR || ProfessionalRole.NURSE)
 
   const handleCreateProfessional: SubmitHandler<
     IProfessionalInputs
@@ -84,23 +86,38 @@ const CreateProfessional: React.FC<ICreateProfessionalProps> = ({
       />
       {isRequiredForRole && (
         <>
-          <FormLabel>Registration Number / State</FormLabel>
+          <Input
+            name="registrationNumber"
+            label="Registration Number"
+            type="number"
+            placeholder="000000"
+            validators={{ required: isRequiredForRole }}
+          />
           <HStack>
-            <Input
-              name="registrationNumber"
-              type="number"
-              placeholder="000000"
-              validators={{ required: isRequiredForRole }}
-            />
-            <Heading size="lg">/</Heading>
             <Select
-              name="registrationState"
-              options={State.getAllStates().map(({ name, isoCode }) => {
+              name="country"
+              label="Country"
+              placeholder="Select an option"
+              options={Country.getAllCountries().map(({ name, isoCode }) => {
                 return {
                   label: name,
                   value: isoCode,
                 }
               })}
+              validators={{ required: isRequiredForRole }}
+            />
+            <Select
+              name="registrationState"
+              label="State/Region/Province"
+              placeholder="Select an option"
+              options={State.getStatesOfCountry(watchCountry).map(
+                ({ name, isoCode }) => {
+                  return {
+                    label: name,
+                    value: isoCode,
+                  }
+                },
+              )}
               validators={{ required: isRequiredForRole }}
             />
           </HStack>
@@ -116,6 +133,7 @@ const CreateProfessional: React.FC<ICreateProfessionalProps> = ({
         <Select
           label="Specialty"
           name="specialty"
+          placeholder="Select an option"
           options={specialties.map(({ name }: Specialty) => {
             return {
               label: name,

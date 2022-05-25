@@ -6,7 +6,6 @@ import {
   FormLabel,
 } from '@chakra-ui/react'
 import { Controller, useFormContext } from 'react-hook-form'
-import { v4 as uuidv4 } from 'uuid'
 import { IInputValidator } from '../../../models/interfaces'
 
 type Options = { label: string; value: string }
@@ -51,7 +50,10 @@ export const Select: React.FC<ISelectProps> = ({
               _placeholder={{ color: 'gray.500' }}
             >
               {options.map(option => (
-                <option key={uuidv4()} value={option.value}>
+                <option
+                  key={`${option.label}-${option.value}`}
+                  value={option.value}
+                >
                   {option.label}
                 </option>
               ))}
