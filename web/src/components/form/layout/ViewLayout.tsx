@@ -1,4 +1,10 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Box,
   Button,
   Divider,
   Flex,
@@ -101,59 +107,69 @@ export const ListOfAttendances = ({
   return (
     <>
       {!hasAttendances && <Text>No records found</Text>}
-      {hasAttendances &&
-        attendances.map(({ id, type, date, status, professional, patient }) => {
-          let color = 'red'
-          if (status === AttendanceStatus.IN_PROGRESS) {
-            color = 'yellow'
-          } else if (status === AttendanceStatus.CONFIRMED) {
-            color = 'green'
-          } else if (status === AttendanceStatus.DONE) {
-            color = 'gray'
-          }
 
-          return (
-            <Flex key={`${id}-${type}`} align={'center'} justify={'center'}>
-              <Stack
-                spacing={4}
-                w={'full'}
-                bg={'gray.50'}
-                rounded={'xl'}
-                boxShadow={'lg'}
-                p={6}
-              >
-                <Wrap justify={'space-between'}>
-                  <WrapItem>
-                    <Row text={formatDate(date, 'PPPPpp')} />
-                  </WrapItem>
-                  <WrapItem>
-                    <Row text={type} />
-                  </WrapItem>
-                  <WrapItem>
-                    <Row
-                      title={patient ? 'Patient' : 'Attended by'}
-                      text={professional?.name ?? patient?.name}
-                    />
-                  </WrapItem>
-                  <WrapItem>
-                    <Row
-                      text={
-                        <Tag
-                          size="sm"
-                          borderRadius="full"
-                          variant="solid"
-                          colorScheme={color}
-                        >
-                          <TagLabel>{status}</TagLabel>
-                        </Tag>
-                      }
-                    />
-                  </WrapItem>
-                </Wrap>
-              </Stack>
-            </Flex>
-          )
-        })}
+      {hasAttendances && (
+        <Accordion allowToggle allowMultiple>
+          {attendances.map(
+            ({ id, type, date, status, professional, patient, record }) => {
+              let color = 'red'
+              if (status === AttendanceStatus.IN_PROGRESS) {
+                color = 'yellow'
+              } else if (status === AttendanceStatus.CONFIRMED) {
+                color = 'green'
+              } else if (status === AttendanceStatus.DONE) {
+                color = 'gray'
+              }
+
+              return (
+                <AccordionItem key={`${id}-${type}`} borderTopWidth={0}>
+                  <h2>
+                    <AccordionButton>
+                      <Box flex="1" textAlign="left">
+                        <Wrap justify={'space-evenly'}>
+                          <WrapItem>
+                            <Row text={formatDate(date, 'PPPPpp')} />
+                          </WrapItem>
+                          <WrapItem>
+                            <Row text={type} />
+                          </WrapItem>
+                          <WrapItem>
+                            <Row
+                              title={patient ? 'Patient' : 'Attended by'}
+                              text={professional?.name ?? patient?.name}
+                            />
+                          </WrapItem>
+                          <WrapItem>
+                            <Row
+                              text={
+                                <Tag
+                                  size="sm"
+                                  borderRadius="full"
+                                  variant="solid"
+                                  colorScheme={color}
+                                >
+                                  <TagLabel>{status}</TagLabel>
+                                </Tag>
+                              }
+                            />
+                          </WrapItem>
+                        </Wrap>
+                      </Box>
+                      {!patient && <AccordionIcon />}
+                    </AccordionButton>
+                  </h2>
+
+                  {!patient && (
+                    <AccordionPanel pb={4}>
+                      {record?.description ?? 'Attendance not started'}
+                    </AccordionPanel>
+                  )}
+                </AccordionItem>
+              )
+            },
+          )}
+        </Accordion>
+      )}
     </>
   )
 }

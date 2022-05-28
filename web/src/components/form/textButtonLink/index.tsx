@@ -18,6 +18,7 @@ export const TextButtonLink: React.FC<ITextButtonLinkProps> = ({
         variant="link"
         colorScheme="gray"
         fontWeight="light"
+        data-testid="text-link-button"
       >
         {label}
       </Button>

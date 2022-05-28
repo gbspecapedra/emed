@@ -74,6 +74,7 @@ const ResetPassword: NextPage = () => {
               colorScheme="blue"
               disabled={!methods.formState.isValid}
               isLoading={methods.formState.isSubmitting}
+              data-testid="reset-button"
             >
               Request Reset
             </Button>

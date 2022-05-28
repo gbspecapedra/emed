@@ -205,9 +205,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
               colorScheme="blue"
               variant="solid"
               marginRight={2}
-              onClick={() =>
-                router.push(`/dashboard/attendance/${row.patientId}`)
-              }
+              onClick={() => router.push(`/dashboard/attendance/${row.id}`)}
               disabled={professional?.id !== row.professionalId}
             >
               {row.professional.role === ProfessionalRole.NURSE ? (
@@ -265,7 +263,9 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
             )}
             <MenuItem
               icon={<FaHistory />}
-              onClick={() => router.push('/dashboard/medical-record')}
+              onClick={() =>
+                router.push(`/dashboard/patients/view/${row.patientId}`)
+              }
             >
               Medical Records
             </MenuItem>

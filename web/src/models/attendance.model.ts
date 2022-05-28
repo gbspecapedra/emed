@@ -1,6 +1,7 @@
 import { AttendanceStatus, AttendanceType } from './enums'
 import { Patient } from './patient.model'
 import { Professional } from './professional.model'
+import { MedicalRecord } from './record.model'
 
 export type Attendance = {
   id: number
@@ -15,4 +16,6 @@ export type Attendance = {
 
   patient: Pick<Patient, 'name'>
   professional: Pick<Professional, 'name'>
+
+  record: MedicalRecord
 }

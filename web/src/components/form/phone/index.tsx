@@ -32,14 +32,6 @@ export const InputPhone: React.FC<IInputPhoneProps> = ({
       render={({ field }) => (
         <FormControl isInvalid={!!errors[name]}>
           {label && <FormLabel>{label}</FormLabel>}
-          {/* <PrimeInputMask
-            {...field}
-            {...props}
-            id={field.name}
-            mask={mask}
-            value={field.value}
-            onChange={e => field.onChange(e.value)}
-          /> */}
           <PhoneInput
             country={'br'}
             value={field.value}
@@ -49,6 +41,7 @@ export const InputPhone: React.FC<IInputPhoneProps> = ({
             inputStyle={{
               height: '2.5rem',
             }}
+            data-testid={`input-${name}`}
           />
 
           {!!errors[name] && (

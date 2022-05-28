@@ -48,6 +48,7 @@ export const Select: React.FC<ISelectProps> = ({
               id={field.name}
               name={field.name}
               _placeholder={{ color: 'gray.500' }}
+              data-testid={`select-${name}`}
             >
               {options.map(option => (
                 <option

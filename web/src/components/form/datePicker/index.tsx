@@ -50,6 +50,7 @@ export const DatePicker: React.FC<IDatePickerProps> = ({
               height: '2.5rem',
               width: 'inherit',
             }}
+            data-testid={`datepicker-${name}`}
           />
           {!!errors[name] && (
             <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>

@@ -61,6 +61,7 @@ export function FormLayout<T>({
               colorScheme="green"
               isLoading={methods.formState.isSubmitting}
               disabled={!methods.formState.isValid}
+              data-testid="submit-form-button"
             >
               Save
             </Button>

@@ -81,8 +81,9 @@ const Home = () => {
                   colorScheme="blue"
                   disabled={!methods.formState.isValid}
                   isLoading={methods.formState.isSubmitting}
+                  data-testid="signin-button"
                 >
-                  Sign in
+                  Sign-in
                 </Button>
               </Stack>
             </Stack>

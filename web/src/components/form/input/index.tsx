@@ -59,6 +59,7 @@ export const Input: React.FC<IInputProps> = ({
               type={isPassword && show ? 'text' : type}
               _disabled={{ color: 'gray.800', cursor: 'not-allowed' }}
               _placeholder={{ color: 'gray.500' }}
+              data-testid={`input-${name}`}
             />
             {isPassword && (
               <InputRightElement>

@@ -29,9 +29,22 @@ export const getServerSideProps: GetServerSideProps = async ctx => {
     }
   }
 
-  const { data } = await apiClient.get(`/patients/${ctx.params?.id}`)
+  const { params } = ctx
+  const { data } = await apiClient.get(`/attendances/${params?.id}`)
+
+  let record = data?.record
+  if (!record) {
+    await apiClient
+      .post('/registers', {
+        attendanceId: params?.id,
+        description: null,
+      })
+      .then(response => {
+        console.log(response)
+      })
+  }
 
   return {
-    props: { patient: data },
+    props: { patient: data?.patient, record: record },
   }
 }
