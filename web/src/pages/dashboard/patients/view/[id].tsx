@@ -1,16 +1,13 @@
-import {
-  Divider,
-  Heading,
-  SimpleGrid,
-  Tag,
-  TagLabel,
-  HStack,
-} from '@chakra-ui/react'
+import { Wrap, WrapItem } from '@chakra-ui/react'
 import { GetServerSideProps } from 'next'
 import { parseCookies } from 'nookies'
 import React from 'react'
-import { Row, ViewLayout } from '../../../../components/form/layout/ViewLayout'
-import { AttendanceStatus } from '../../../../models/enums'
+import {
+  Header,
+  ListOfAttendances,
+  Row,
+  ViewLayout,
+} from '../../../../components/form/layout/ViewLayout'
 import { Patient } from '../../../../models/patient.model'
 import { getAPIClient } from '../../../../services/axios'
 import { EMED_TOKEN, formatDate } from '../../../../utils'
@@ -28,77 +25,59 @@ const ViewPatient: React.FC<IViewPatientProps> = ({ patient }) => {
       returnTo="/dashboard/patients"
     >
       <Row title="Social Number" text={`${patient.socialNumber}`} />
-      <SimpleGrid columns={2}>
-        <Row title="Birthday" text={formatDate(patient.birthday)} />
-        <Row title="Gender" text={patient.gender} />
-      </SimpleGrid>
+      <Wrap justify={'space-between'}>
+        <WrapItem>
+          <Row title="Birthday" text={formatDate(patient.birthday)} />
+        </WrapItem>
+        <WrapItem>
+          <Row title="Gender" text={patient.gender} />
+        </WrapItem>
+      </Wrap>
       <Row title="Contact" text={patient.contact} />
 
-      <Heading pt={8} size={'md'}>
-        Address
-      </Heading>
-      <Divider />
+      <Header title="Address" />
       <Row title="Zip Code" text={patient.zipcode} />
-      <SimpleGrid columns={2}>
-        <Row title="Street" text={patient.street} />
-        <Row title="Number" text={`${patient.number ?? `na`}`} />
-      </SimpleGrid>
+      <Wrap justify={'space-between'}>
+        <WrapItem>
+          <Row title="Street" text={patient.street} />
+        </WrapItem>
+        <WrapItem>
+          <Row title="Number" text={`${patient.number ?? `na`}`} />
+        </WrapItem>
+      </Wrap>
       {patient.complement && (
         <Row title="Complement" text={patient.complement} />
       )}
-      <SimpleGrid columns={3}>
-        <Row title="Country" text={patient.country} />
-        <Row title="State" text={patient.state} />
-        <Row title="County" text={patient.county} />
-      </SimpleGrid>
+      <Wrap justify={'space-between'}>
+        <WrapItem>
+          <Row title="Country" text={patient.country} />
+        </WrapItem>
+        <WrapItem>
+          <Row title="State" text={patient.state} />
+        </WrapItem>
+        <WrapItem>
+          <Row title="County" text={patient.county} />
+        </WrapItem>
+      </Wrap>
 
-      <Heading pt={8} size={'md'}>
-        Plan
-      </Heading>
-      <Divider />
-      <SimpleGrid columns={2}>
-        <Row title="Health Plan" text={patient.healthPlan?.name ?? 'Private'} />
-        <Row
-          title="Expiration"
-          text={formatDate(patient.healthPlanExpiration)}
-        />
-      </SimpleGrid>
+      <Header title="Plan" />
+      <Wrap justify={'space-between'}>
+        <WrapItem>
+          <Row
+            title="Health Plan"
+            text={patient.healthPlan?.name ?? 'Private'}
+          />
+        </WrapItem>
+        <WrapItem>
+          <Row
+            title="Expiration"
+            text={formatDate(patient.healthPlanExpiration)}
+          />
+        </WrapItem>
+      </Wrap>
 
-      <Heading pt={8} size={'md'}>
-        Attendances
-      </Heading>
-      <Divider />
-      {patient.attendances.map(({ id, type, date, status }) => {
-        let color = 'red'
-        if (status === AttendanceStatus.IN_PROGRESS) {
-          color = 'yellow'
-        } else if (status === AttendanceStatus.CONFIRMED) {
-          color = 'green'
-        } else if (status === AttendanceStatus.DONE) {
-          color = 'gray'
-        }
-
-        return (
-          <SimpleGrid key={`${id}-${type}`} columns={2}>
-            <HStack>
-              <Row
-                text={
-                  <Tag
-                    size="sm"
-                    borderRadius="full"
-                    variant="solid"
-                    colorScheme={color}
-                  >
-                    <TagLabel>{status}</TagLabel>
-                  </Tag>
-                }
-              />
-              <Row text={type} />
-            </HStack>
-            <Row title="Date" text={formatDate(date, 'PPPPpp')} />
-          </SimpleGrid>
-        )
-      })}
+      <Header title="Attendances" />
+      <ListOfAttendances attendances={patient.attendances} />
     </ViewLayout>
   )
 }

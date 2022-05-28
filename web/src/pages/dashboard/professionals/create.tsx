@@ -42,7 +42,8 @@ const CreateProfessional: React.FC<ICreateProfessionalProps> = ({
   const watchCountry = methods.watch('country') ?? ''
   const watchRole = methods.watch('role')
   const isRequiredForRole =
-    watchRole === (ProfessionalRole.DOCTOR || ProfessionalRole.NURSE)
+    watchRole === ProfessionalRole.DOCTOR ||
+    watchRole === ProfessionalRole.NURSE
 
   const handleCreateProfessional: SubmitHandler<
     IProfessionalInputs

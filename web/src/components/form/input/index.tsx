@@ -47,42 +47,41 @@ export const Input: React.FC<IInputProps> = ({
       defaultValue={defaultValue}
       rules={validators}
       render={({ field }) => (
-        <>
-          <FormControl isInvalid={!!errors[name]}>
-            {label && <FormLabel>{label}</FormLabel>}
-            <InputGroup>
-              <ChakraInput
-                {...field}
-                {...props}
-                autoFocus
-                id={field.name}
-                name={field.name}
-                type={isPassword && show ? 'text' : type}
-                _placeholder={{ color: 'gray.500' }}
-              />
-              {isPassword && (
-                <InputRightElement>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    colorScheme="blackAlpha"
-                    marginRight={1}
-                    onClick={() => setShow(!show)}
-                  >
-                    {show ? (
-                      <Icon as={AiOutlineEyeInvisible} />
-                    ) : (
-                      <Icon as={AiOutlineEye} />
-                    )}
-                  </Button>
-                </InputRightElement>
-              )}
-            </InputGroup>
-            {!!errors[name] && (
-              <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
+        <FormControl isInvalid={!!errors[name]}>
+          {label && <FormLabel>{label}</FormLabel>}
+          <InputGroup>
+            <ChakraInput
+              {...field}
+              {...props}
+              autoFocus
+              id={field.name}
+              name={field.name}
+              type={isPassword && show ? 'text' : type}
+              _disabled={{ color: 'gray.800', cursor: 'not-allowed' }}
+              _placeholder={{ color: 'gray.500' }}
+            />
+            {isPassword && (
+              <InputRightElement>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  colorScheme="blackAlpha"
+                  marginRight={1}
+                  onClick={() => setShow(!show)}
+                >
+                  {show ? (
+                    <Icon as={AiOutlineEyeInvisible} />
+                  ) : (
+                    <Icon as={AiOutlineEye} />
+                  )}
+                </Button>
+              </InputRightElement>
             )}
-          </FormControl>
-        </>
+          </InputGroup>
+          {!!errors[name] && (
+            <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
+          )}
+        </FormControl>
       )}
     />
   )

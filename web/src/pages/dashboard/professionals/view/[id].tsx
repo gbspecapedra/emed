@@ -1,9 +1,15 @@
-import { SimpleGrid } from '@chakra-ui/react'
+import { Wrap, WrapItem } from '@chakra-ui/react'
 import { GetServerSideProps } from 'next'
 import { parseCookies } from 'nookies'
-import { Row, ViewLayout } from '../../../../components/form/layout/ViewLayout'
+import {
+  Header,
+  ListOfAttendances,
+  Row,
+  ViewLayout,
+} from '../../../../components/form/layout/ViewLayout'
 import { Professional } from '../../../../models'
 import { getAPIClient } from '../../../../services/axios'
+import { formatProfessional } from '../../../../services/professionals'
 import { EMED_TOKEN } from '../../../../utils'
 
 interface IViewProfessionalProps {
@@ -15,20 +21,24 @@ const ViewProfessional: React.FC<IViewProfessionalProps> = ({
 }) => {
   return (
     <ViewLayout
-      header={professional?.name}
+      header={professional.name}
       showTag
       tag={professional.active}
       returnTo="/dashboard/professionals"
     >
-      <SimpleGrid columns={2}>
-        <Row title="Role" text={professional.role} />
-        <Row
-          title="Registration Number"
-          text={`${professional.registrationNumber}/${professional.registrationState}`}
-        />
-      </SimpleGrid>
+      <Wrap justify={'space-between'}>
+        <WrapItem>
+          <Row title="Role" text={professional.role} />
+        </WrapItem>
+        <WrapItem>
+          <Row title="Registration Number" text={professional.registration} />
+        </WrapItem>
+      </Wrap>
       <Row title="Specialty" text={professional.specialty} />
       <Row title="Email" text={professional.email} />
+
+      <Header title="Attendances" />
+      <ListOfAttendances attendances={professional.attendances} />
     </ViewLayout>
   )
 }
@@ -51,8 +61,9 @@ export const getServerSideProps: GetServerSideProps = async ctx => {
 
   const { params } = ctx
   const { data } = await apiClient.get(`/professionals/${params?.id}`)
+  const professional = formatProfessional([data])
 
   return {
-    props: { professionals: data },
+    props: { professional: professional[0] },
   }
 }

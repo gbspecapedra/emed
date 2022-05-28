@@ -1,3 +1,4 @@
+import { Attendance } from './attendance.model'
 import { ProfessionalRole } from './enums'
 
 export type Professional = {
@@ -12,6 +13,8 @@ export type Professional = {
   active: boolean
   createdAt: string
   updatedAt: string
+
+  attendances: Attendance[]
 
   registrationNumber?: number
   registrationState?: string

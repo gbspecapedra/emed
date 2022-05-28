@@ -52,7 +52,7 @@ const Patients: React.FC<IPatientsProps> = ({ patients }) => {
   async function handleUpdateStatus(patientId: string, status: boolean) {
     try {
       await api
-        .put(`/professionals/${patientId}`, {
+        .put(`/patients/${patientId}`, {
           id: patientId,
           active: status,
         })

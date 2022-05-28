@@ -17,3 +17,57 @@ export const REGEX: {
   CLEAN_URL: /^[a-zA-Z0-9-_/.]+$/g,
   BEGINS_WITH_SLASH: /^[/]/g,
 }
+
+export const GENDER = [
+  {
+    value: 'Agender',
+  },
+  {
+    value: 'Bigender',
+  },
+  {
+    value: 'Cisgender',
+  },
+  {
+    value: 'Gender Expression',
+  },
+  {
+    value: 'Gender Fluid',
+  },
+  {
+    value: 'Genderqueer',
+  },
+  {
+    value: 'Gender Variant',
+  },
+  {
+    value: 'Mx.',
+  },
+  {
+    value: 'Non-Binary',
+  },
+  {
+    value: 'Passing',
+  },
+  {
+    value: 'Third Gender',
+  },
+  {
+    value: 'Transgender',
+  },
+  {
+    value: 'Transgender man',
+  },
+  {
+    value: 'Transgender woman',
+  },
+  {
+    value: 'Two-Spirit',
+  },
+  {
+    value: 'Ze / Hir',
+  },
+  {
+    value: 'Prefer not to say',
+  },
+]
