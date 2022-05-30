@@ -1,29 +1,28 @@
+import { DatePicker } from '@/components/form/datePicker'
+import { Select } from '@/components/form/select'
+import { Textarea } from '@/components/form/textarea'
 import {
   Button,
   Flex,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
   HStack,
   IconButton,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
-  Select,
+  SimpleGrid,
   Stack,
   Tag,
   TagLabel,
-  Textarea,
+  VStack,
 } from '@chakra-ui/react'
 import { format } from 'date-fns'
 import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import { parseCookies } from 'nookies'
 
-import { Calendar } from 'primereact/calendar'
 import { Column } from 'primereact/column'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { BiDotsVerticalRounded } from 'react-icons/bi'
@@ -57,6 +56,13 @@ import { useNotification } from '../../services/hooks/useNotification'
 import { useRoles } from '../../services/hooks/useRoles'
 import { EMED_TOKEN, saveAsExcelFile } from '../../utils'
 
+interface IAttendanceInputs {
+  type?: AttendanceType
+  professional?: string
+  patient?: string
+  date?: Date
+  cancellationReason?: string
+}
 interface IDashboardProps {
   attendances: Attendance[]
 }
@@ -67,9 +73,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
   const { canManageAppointments, canManageAttendances } = useRoles()
   const notification = useNotification()
 
-  const [selectedAppointment, setSelectedAppointment] = useState<Attendance>(
-    {} as Attendance,
-  )
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
 
   const [listOfAttendances, setListOfAttendances] =
     useState<Attendance[]>(attendances)
@@ -78,19 +82,134 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
     Professional[]
   >([])
 
-  const [openCreateDialog, setOpenCreateDialog] = useState(false)
-  const [openRescheduleDialog, setOpenRescheduleDialog] = useState(false)
-  const [openCancelDialog, setOpenCancelDialog] = useState(false)
+  const [isShowingModal, setIsShowingModal] = useState<boolean>(false)
+  const [isConfirmationModal, setIsConfirmationModal] = useState<boolean>(false)
+  const [modalSize, setModalSize] = useState<string>('lg')
+  const [modalHeader, setModalHeader] = useState<string>('')
+  const [modalBody, setModalBody] = useState<JSX.Element>(<></>)
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm()
+  const methods = useForm<IAttendanceInputs>({
+    mode: 'onChange',
+  })
+
+  const createAttendance = (
+    <SimpleGrid columns={2} spacing={10}>
+      <DatePicker
+        name="date"
+        label="Date"
+        placeholder="DD/MM/YYYY"
+        minDate={new Date()}
+        disabledDays={[0, 6]}
+        showTime
+        inline
+        showIcon={false}
+        stepMinute={15}
+        validators={{ required: 'Date is required' }}
+      />
+
+      <VStack justify={'flex-start'} spacing={10}>
+        <Select
+          name="type"
+          label="Type"
+          placeholder="Select an option"
+          options={Object.keys(AttendanceType).map((key, index) => {
+            return {
+              label: key,
+              value: key,
+            }
+          })}
+          validators={{ required: 'Attendance type is required' }}
+        />
+
+        <Select
+          name="professional"
+          label="Professional"
+          placeholder="Select an option"
+          options={listOfProfessionals
+            .filter(professional => {
+              if (selectedAppointment?.type === AttendanceType.TRIAGE) {
+                return professional.role === ProfessionalRole.NURSE
+              }
+              return professional.role === ProfessionalRole.DOCTOR
+            })
+            .map(({ id, name }) => {
+              return {
+                label: name,
+                value: id.toString(),
+              }
+            })}
+          validators={{ required: 'Professional is required' }}
+        />
+
+        <Select
+          name="patient"
+          label="Patient"
+          placeholder="Select an option"
+          options={listOfPatients.map(({ id, name }) => {
+            return {
+              label: name,
+              value: id.toString(),
+            }
+          })}
+          validators={{ required: 'Patient is required' }}
+        />
+      </VStack>
+    </SimpleGrid>
+  )
+
+  const rescheduleAttendance = useMemo(
+    () => (
+      <Stack align="stretch">
+        <HStack align="center" justify={'center'}>
+          <BsFillInfoCircleFill size={30} color="blue" />
+          <span>
+            Select a date for the next attendance for patient{' '}
+            <b>{selectedAppointment?.patient?.name}</b>.
+          </span>
+        </HStack>
+        <DatePicker
+          name="date"
+          label="Date"
+          placeholder="DD/MM/YYYY"
+          minDate={new Date()}
+          disabledDays={[0, 6]}
+          showTime
+          inline
+          showIcon={false}
+          stepMinute={15}
+          validators={{ required: 'Date is required' }}
+        />
+      </Stack>
+    ),
+    [selectedAppointment],
+  )
+
+  const cancelAttendance = useMemo(
+    () => (
+      <Stack align="stretch" spacing={5}>
+        <HStack align="center">
+          <BsExclamationTriangle size={40} color="orange" />
+          <span>
+            Are you sure you want to cancel the appointment of patient{' '}
+            <b>{selectedAppointment?.patient?.name}</b>?
+          </span>
+        </HStack>
+
+        <Textarea
+          name="cancellationReason"
+          placeholder="Describe the reason for the cancellation..."
+          validators={{
+            required: 'A reason to cancel an attendance is required',
+          }}
+        />
+      </Stack>
+    ),
+    [selectedAppointment],
+  )
 
   async function refetchAttendances() {
     const response = await api.get('/attendances')
-    setSelectedAppointment({} as Attendance)
+    setSelectedAppointment(null)
     setListOfAttendances(response.data)
   }
 
@@ -104,65 +223,66 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
     setListOfProfessionals(response.data)
   }
 
-  const handleCreateAttendance = async (form: any) => {
-    handleCloseModal()
-
-    console.log('create')
-
-    // try {
-    //   if (!selectedAppointment) return
-    //   await api
-    //     .post(`/attendances`, {
-    //       ...selectedAppointment,
-    //     })
-    //     .then(() => {
-    //       notification.success({
-    //         title: 'Attendance created!',
-    //       })
-    //       refetchAttendances()
-    //     })
-    //     .catch(({ response }) => notification.error(response.data.error))
-    // } catch (error) {
-    //   notification.error()
-    // }
+  const handleCreateAttendance = async (form: IAttendanceInputs) => {
+    try {
+      await api
+        .post('/attendances', {
+          type: form.type,
+          professionalId: Number(form.professional),
+          patientId: Number(form.patient),
+          date: form.date,
+        })
+        .then(() => {
+          notification.success({
+            title: 'Attendance created!',
+          })
+          refetchAttendances()
+        })
+        .catch(({ response }) => notification.error(response.data.error))
+    } catch (error) {
+      notification.error()
+    }
   }
 
-  const handleUpdateAttendance = async (form: any) => {
-    console.log(form)
-    handleCloseModal()
-
-    // try {
-    //   if (!selectedAppointment) return
-    //   await api
-    //     .put(`/attendances/${selectedAppointment.id}`, {
-    //       id: selectedAppointment.id,
-    //       date: formatISO9075(selectedAppointment.date),
-    //       status: selectedAppointment.cancellationReason
-    //         ? AttendanceStatus.CANCELED
-    //         : selectedAppointment.status,
-    //       cancellationReason: selectedAppointment.cancellationReason ?? null,
-    //     })
-    //     .then(() => {
-    //       notification.success({
-    //         title: `Attendance ${
-    //           selectedAppointment.status === AttendanceStatus.CANCELED
-    //             ? 'canceled'
-    //             : 'updated'
-    //         }!`,
-    //       })
-    //       refetchAttendances()
-    //     })
-    //     .catch(({ response }) => notification.error(response.data.error))
-    // } catch (error) {
-    //   notification.error()
-    // }
+  const handleUpdateAttendance = async (form: IAttendanceInputs) => {
+    console.log(selectedAppointment)
+    try {
+      if (!selectedAppointment) return
+      await api
+        .put(`/attendances/${selectedAppointment.id}`, {
+          id: selectedAppointment.id,
+          date: selectedAppointment.date,
+          status: selectedAppointment.cancellationReason
+            ? AttendanceStatus.CANCELED
+            : selectedAppointment.status,
+          cancellationReason: selectedAppointment.cancellationReason ?? null,
+        })
+        .then(() => {
+          notification.success({
+            title: `Attendance ${
+              selectedAppointment.status === AttendanceStatus.CANCELED
+                ? 'canceled'
+                : 'updated'
+            }!`,
+          })
+          refetchAttendances()
+        })
+        .catch(({ response }) => notification.error(response.data.error))
+    } catch (error) {
+      notification.error()
+    }
   }
+
+  const [modalOnSubmit, setModalOnSubmit] = useState<(form: any) => void>(
+    () => handleUpdateAttendance,
+  )
 
   const handleNotAttended = async (row: any) => {
     try {
       await api
         .put(`/attendances/${row.id}`, {
           id: row.id,
+          status: 'NOTATTENDED',
           cancellationReason: 'Patient did not attend.',
         })
         .then(() => {
@@ -190,10 +310,8 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
   }
 
   const handleCloseModal = () => {
-    setSelectedAppointment({} as Attendance)
-    setOpenCreateDialog(false)
-    setOpenRescheduleDialog(false)
-    setOpenCancelDialog(false)
+    setSelectedAppointment(null)
+    setIsShowingModal(false)
   }
 
   const actionButtons = (row: any) => {
@@ -223,6 +341,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
               variant="outline"
               marginRight={2}
               onClick={() => handleNotAttended(row)}
+              disabled={row.status !== AttendanceStatus.CONFIRMED}
             >
               <FaUserSlash />
             </Button>
@@ -239,28 +358,37 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
             />
           </Tooltip>
           <MenuList>
-            {canManageAppointments && (
-              <>
-                <MenuItem
-                  icon={<FaUserEdit />}
-                  onClick={() => {
-                    setSelectedAppointment({ ...row, date: undefined })
-                    setOpenRescheduleDialog(true)
-                  }}
-                >
-                  Reschedule appointment
-                </MenuItem>
-                <MenuItem
-                  icon={<FaUserTimes />}
-                  onClick={() => {
-                    setSelectedAppointment(row)
-                    setOpenCancelDialog(true)
-                  }}
-                >
-                  Cancel appointment
-                </MenuItem>
-              </>
-            )}
+            {canManageAppointments &&
+              row.status === AttendanceStatus.CONFIRMED && (
+                <>
+                  <MenuItem
+                    icon={<FaUserEdit />}
+                    onClick={() => {
+                      setSelectedAppointment({ ...row, date: undefined })
+                      setIsConfirmationModal(true)
+                      setModalHeader('Reschedule an appointment')
+                      setModalBody(rescheduleAttendance)
+                      setIsShowingModal(true)
+                    }}
+                    disabled={row.status !== AttendanceStatus.CONFIRMED}
+                  >
+                    Reschedule appointment
+                  </MenuItem>
+                  <MenuItem
+                    icon={<FaUserTimes />}
+                    onClick={() => {
+                      console.log(row)
+                      setSelectedAppointment(row)
+                      setIsConfirmationModal(true)
+                      setModalHeader('Cancel an appointment')
+                      setModalBody(cancelAttendance)
+                      setIsShowingModal(true)
+                    }}
+                  >
+                    Cancel appointment
+                  </MenuItem>
+                </>
+              )}
             <MenuItem
               icon={<FaHistory />}
               onClick={() =>
@@ -298,7 +426,11 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
                   onClick={async () => {
                     await fetchPatients()
                     await fetchProfessionals()
-                    setOpenCreateDialog(true)
+                    setModalSize('4xl')
+                    setModalHeader('Create appointment')
+                    setModalBody(createAttendance)
+                    setModalOnSubmit(() => handleCreateAttendance)
+                    setIsShowingModal(true)
                   }}
                 >
                   <GoPlus />
@@ -349,172 +481,15 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
       </Table>
 
       <Modal
-        title="Create appointment"
-        isVisible={openCreateDialog}
+        methods={methods}
+        title={modalHeader}
+        isVisible={isShowingModal}
+        isConfirmation={isConfirmationModal}
+        size={modalSize}
         onClose={handleCloseModal}
-        onSubmit={handleSubmit(handleCreateAttendance)}
+        onSubmit={modalOnSubmit}
       >
-        <FormControl isInvalid={errors.type}>
-          <FormLabel htmlFor="type">Type</FormLabel>
-          <Select
-            id="type"
-            placeholder="Select an option"
-            {...register('type', {
-              required: 'Attendance type is required',
-            })}
-          >
-            {Object.keys(AttendanceType).map((key, index) => {
-              return (
-                <option key={index} value={key}>
-                  {key}
-                </option>
-              )
-            })}
-          </Select>
-          <FormErrorMessage>
-            {errors.type && errors.type.message}
-          </FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={errors.professional}>
-          <FormLabel htmlFor="professional">Professional</FormLabel>
-          <Select
-            id="professional"
-            placeholder="Select a professional"
-            {...register('professional', {
-              required: 'Choose a professional is required',
-            })}
-          >
-            {listOfProfessionals
-              .filter(professional => {
-                if (selectedAppointment.type === AttendanceType.TRIAGE) {
-                  return professional.role === ProfessionalRole.NURSE
-                }
-                return professional.role === ProfessionalRole.DOCTOR
-              })
-              .map(({ id, name }) => {
-                return (
-                  <option key={id} value={id}>
-                    {name}
-                  </option>
-                )
-              })}
-          </Select>
-          <FormErrorMessage>
-            {errors.professional && errors.professional.message}
-          </FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={errors.patient}>
-          <FormLabel htmlFor="patient">Patient</FormLabel>
-          <Select
-            id="patient"
-            placeholder="Select a patient"
-            {...register('patient', {
-              required: 'Choose a patient is required',
-            })}
-          >
-            {listOfPatients.map(({ id, name }) => {
-              return (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              )
-            })}
-          </Select>
-          <FormErrorMessage>
-            {errors.patient && errors.patient.message}
-          </FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={errors.date}>
-          <FormLabel htmlFor="date">Date</FormLabel>
-          <Calendar
-            id="date"
-            value={selectedAppointment?.date}
-            minDate={new Date()}
-            dateFormat="MM dd, yy"
-            disabledDays={[0, 6]}
-            hourFormat="12"
-            showTime
-            readOnlyInput
-            {...register('date', {
-              required: 'Date is required',
-            })}
-          />
-          <FormErrorMessage>
-            {errors.date && errors.date.message}
-          </FormErrorMessage>
-        </FormControl>
-      </Modal>
-
-      <Modal
-        title="Reschedule appointment"
-        isConfirmation
-        isVisible={openRescheduleDialog}
-        onClose={handleCloseModal}
-        onSubmit={handleSubmit(handleUpdateAttendance)}
-      >
-        <Stack align="stretch">
-          <HStack align="center">
-            <BsFillInfoCircleFill size={30} color="blue" />
-            <span>
-              Select a date for the next attendance for patient{' '}
-              <b>{selectedAppointment?.patient?.name}</b>.
-            </span>
-          </HStack>
-          <FormControl isInvalid={errors.date}>
-            <Calendar
-              id="date"
-              value={selectedAppointment?.date}
-              minDate={new Date()}
-              dateFormat="MM dd, yy"
-              disabledDays={[0, 6]}
-              hourFormat="12"
-              showTime
-              readOnlyInput
-              {...register('date', {
-                required: 'Date is required',
-              })}
-            />
-            <FormErrorMessage>
-              {errors.date && errors.date.message}
-            </FormErrorMessage>
-          </FormControl>
-        </Stack>
-      </Modal>
-
-      <Modal
-        title="Cancel appointment"
-        isConfirmation
-        isVisible={openCancelDialog}
-        onClose={handleCloseModal}
-        onSubmit={handleSubmit(handleUpdateAttendance)}
-      >
-        <Stack align="stretch">
-          <HStack align="center">
-            <BsExclamationTriangle size={40} color="orange" />
-            <span>
-              Are you sure you want to cancel the appointment of patient{' '}
-              <b>{selectedAppointment?.patient?.name}</b>?
-            </span>
-          </HStack>
-
-          <FormControl isInvalid={errors.cancellationReason}>
-            <Textarea
-              id="cancellationReason"
-              placeholder="Describe the reason for the cancellation..."
-              size="sm"
-              resize="none"
-              {...register('cancellationReason', {
-                required: 'This is required',
-              })}
-            />
-            <FormErrorMessage>
-              {errors.cancellationReason && errors.cancellationReason.message}
-            </FormErrorMessage>
-          </FormControl>
-        </Stack>
+        {modalBody}
       </Modal>
     </>
   )

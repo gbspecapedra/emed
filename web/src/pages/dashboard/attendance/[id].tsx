@@ -1,3 +1,4 @@
+import { MedicalRecord } from 'models/record.model'
 import { GetServerSideProps } from 'next'
 import { parseCookies } from 'nookies'
 import React from 'react'
@@ -7,9 +8,11 @@ import { EMED_TOKEN } from '../../../utils'
 
 interface IAttendanceProps {
   patient: Patient
+  medicalRecord: MedicalRecord
 }
 
-const Attendance: React.FC<IAttendanceProps> = ({ patient }) => {
+const Attendance: React.FC<IAttendanceProps> = ({ patient, medicalRecord }) => {
+  console.log(medicalRecord)
   return <div>{`Attendance ${patient?.name}`}</div>
 }
 
@@ -32,19 +35,7 @@ export const getServerSideProps: GetServerSideProps = async ctx => {
   const { params } = ctx
   const { data } = await apiClient.get(`/attendances/${params?.id}`)
 
-  let record = data?.record
-  if (!record) {
-    await apiClient
-      .post('/registers', {
-        attendanceId: params?.id,
-        description: null,
-      })
-      .then(response => {
-        console.log(response)
-      })
-  }
-
   return {
-    props: { patient: data?.patient, record: record },
+    props: { patient: data?.patient, medicalRecord: data?.medicalRecord },
   }
 }

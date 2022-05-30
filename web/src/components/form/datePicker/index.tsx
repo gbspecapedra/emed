@@ -10,6 +10,8 @@ interface IDatePickerProps extends CalendarProps {
   defaultValue?: string
   validators?: IInputValidator
   showTime?: boolean
+  showIcon?: boolean
+  inline?: boolean
 }
 
 export const DatePicker: React.FC<IDatePickerProps> = ({
@@ -18,6 +20,8 @@ export const DatePicker: React.FC<IDatePickerProps> = ({
   defaultValue = '',
   validators,
   showTime = false,
+  showIcon = true,
+  inline = false,
   ...props
 }) => {
   const {
@@ -42,14 +46,15 @@ export const DatePicker: React.FC<IDatePickerProps> = ({
             onChange={e => field.onChange(e.value)}
             dateFormat="dd/mm/yy"
             mask="99/99/9999"
-            showIcon
+            showIcon={showIcon}
             showTime={showTime}
             readOnlyInput
             hideOnDateTimeSelect
             style={{
-              height: '2.5rem',
+              height: !inline && '2.5rem',
               width: 'inherit',
             }}
+            inline={inline}
             data-testid={`datepicker-${name}`}
           />
           {!!errors[name] && (
