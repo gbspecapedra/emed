@@ -245,7 +245,6 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
   }
 
   const handleUpdateAttendance = async (form: IAttendanceInputs) => {
-    console.log(selectedAppointment)
     try {
       if (!selectedAppointment) return
       await api
@@ -276,6 +275,26 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
   const [modalOnSubmit, setModalOnSubmit] = useState<(form: any) => void>(
     () => handleUpdateAttendance,
   )
+
+  const handleAttended = async (row: any) => {
+    try {
+      if (row.status !== AttendanceStatus.IN_PROGRESS) {
+        await api
+          .put(`/attendances/${row.id}`, {
+            id: row.id,
+            status: 'INPROGRESS',
+          })
+          .then(() => {
+            router.push(`/dashboard/attendance/${row.id}`)
+          })
+          .catch(({ response }) => notification.error(response.data.error))
+      } else {
+        router.push(`/dashboard/attendance/${row.id}`)
+      }
+    } catch (error) {
+      notification.error()
+    }
+  }
 
   const handleNotAttended = async (row: any) => {
     try {
@@ -323,8 +342,11 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
               colorScheme="blue"
               variant="solid"
               marginRight={2}
-              onClick={() => router.push(`/dashboard/attendance/${row.id}`)}
-              disabled={professional?.id !== row.professionalId}
+              onClick={() => handleAttended(row)}
+              disabled={
+                professional?.id !== row.professionalId ||
+                row.status !== AttendanceStatus.CONFIRMED
+              }
             >
               {row.professional.role === ProfessionalRole.NURSE ? (
                 <FaUserNurse />
@@ -370,7 +392,6 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
                       setModalBody(rescheduleAttendance)
                       setIsShowingModal(true)
                     }}
-                    disabled={row.status !== AttendanceStatus.CONFIRMED}
                   >
                     Reschedule appointment
                   </MenuItem>

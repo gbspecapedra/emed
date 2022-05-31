@@ -19,8 +19,17 @@
       "@/components/*": [
         "components/*"
       ],
+      "@/models/*": [
+        "models/*"
+      ],
       "@/pages/*": [
         "pages/*"
+      ],
+      "@/services/*": [
+        "services/*"
+      ],
+      "@/utils/*": [
+        "utils/*"
       ]
     }
   },
