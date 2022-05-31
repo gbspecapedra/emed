@@ -345,7 +345,8 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
               onClick={() => handleAttended(row)}
               disabled={
                 professional?.id !== row.professionalId ||
-                row.status !== AttendanceStatus.CONFIRMED
+                (row.status !== AttendanceStatus.CONFIRMED &&
+                  row.status !== AttendanceStatus.IN_PROGRESS)
               }
             >
               {row.professional.role === ProfessionalRole.NURSE ? (

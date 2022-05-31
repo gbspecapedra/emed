@@ -4,22 +4,27 @@ import { Textarea } from '@/components/form/textarea'
 import { MedicalRecord } from 'models/record.model'
 import { GetServerSideProps } from 'next'
 import { parseCookies } from 'nookies'
-import React, { useMemo, useState } from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
+import React, { useEffect, useMemo, useState } from 'react'
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { api } from 'services/api'
 import { useNotification } from 'services/hooks/useNotification'
 import { Patient } from '../../../models/patient.model'
 import { getAPIClient } from '../../../services/axios'
 import { Accordion, AccordionTab } from 'primereact/accordion'
-import { EMED_TOKEN } from '../../../utils'
+import { calculateBMI, EMED_TOKEN, nullsToUndefined } from '../../../utils'
 import {
+  Box,
   Button,
+  Flex,
   FormLabel,
+  Heading,
   HStack,
   InputGroup,
   InputLeftAddon,
   InputRightAddon,
+  Stack,
   Text,
+  useColorModeValue,
   VStack,
 } from '@chakra-ui/react'
 import Tooltip from '@/components/tooltip'
@@ -29,6 +34,7 @@ import { GoPlusSmall } from 'react-icons/go'
 import { Column } from 'primereact/column'
 import { FaTimes } from 'react-icons/fa'
 import { Medicine } from 'models/medicine.model'
+import { useRouter } from 'next/router'
 
 interface IAttendanceInputs {
   description?: string
@@ -41,44 +47,55 @@ interface IAttendanceInputs {
 }
 
 interface IAttendanceProps {
+  attendanceId: number
   patient: Patient
   medicalRecord: MedicalRecord
 }
 
-const Attendance: React.FC<IAttendanceProps> = ({ patient, medicalRecord }) => {
+const Attendance: React.FC<IAttendanceProps> = ({
+  attendanceId,
+  patient,
+  medicalRecord,
+}) => {
+  const router = useRouter()
   const notification = useNotification()
 
   const [listOfExams, setListOfExams] = useState<Exam[]>([])
   const [listOfMedicines, setListOfMedicines] = useState<Medicine[]>([])
+  const [action, setAction] = useState<'save' | 'finalize'>('save')
 
   const methods = useForm<IAttendanceInputs>({
     mode: 'onChange',
-    defaultValues: medicalRecord,
+    defaultValues: nullsToUndefined(medicalRecord),
   })
 
   const watchWeight = methods.watch('weight')
   const watchHeight = methods.watch('height')
-  useMemo(() => {
-    methods.setValue(
-      'bmi',
-      ((watchWeight ?? 0) / ((watchHeight ?? 0) * (watchHeight ?? 0))).toFixed(
-        2,
-      ),
-    )
-  }, [watchWeight, watchHeight])
+
+  const { bmi, label } = calculateBMI(
+    watchWeight ?? medicalRecord.weight,
+    watchHeight ?? medicalRecord.height,
+  )
+
+  useEffect(() => {
+    methods.setValue('bmi', bmi)
+  }, [])
 
   const handleUpdateAttendance: SubmitHandler<
     IAttendanceInputs
   > = async values => {
+    console.log('save')
+    console.log(values)
     try {
       await api
-        .put('/records', {
+        .put(`/records/${medicalRecord.id}`, {
+          id: medicalRecord.id,
           ...values,
         })
         .then(() => {
           notification.success({
-            title: 'Medical record successfully finished',
-            to: '/dashboard/patients',
+            title: 'Medical record successfully saved',
+            to: '/dashboard',
           })
         })
         .catch(({ response }) => {
@@ -89,120 +106,208 @@ const Attendance: React.FC<IAttendanceProps> = ({ patient, medicalRecord }) => {
     }
   }
 
+  const handleFinalizeAttendance: SubmitHandler<
+    IAttendanceInputs
+  > = async values => {
+    console.log('finalize')
+    try {
+      await api
+        .put(`/attendances/${attendanceId}`, {
+          id: attendanceId,
+          status: 'DONE',
+        })
+        .then(() => {
+          handleUpdateAttendance(values)
+        })
+        .catch(({ response }) => notification.error(response.data.error))
+    } catch (error) {
+      notification.error()
+    }
+  }
+
+  const handleAttendance: SubmitHandler<IAttendanceInputs> = async values => {
+    if (action === 'save') {
+      handleUpdateAttendance(values)
+    } else {
+      handleFinalizeAttendance(values)
+    }
+  }
+
   return (
-    <FormLayout
-      methods={methods}
-      header={`Attendance of ${patient.name}`}
-      onSubmit={handleUpdateAttendance}
-      returnTo="/dashboard/patients"
-    >
-      <Textarea name="description" label="Description" />
-      <Accordion multiple>
-        <AccordionTab header="Anthropometry">
-          <HStack>
-            <Input name="weight" label="Weight" />
-            <Input name="height" label="Height" />
-            <InputGroup paddingTop={8}>
-              <Tooltip title="Body mass index">
-                <InputLeftAddon children="BMI" />
-              </Tooltip>
-              <Input name="bmi" isDisabled variant="flushed" paddingLeft={4} />
-            </InputGroup>
-          </HStack>
-        </AccordionTab>
-        <AccordionTab header="Vitals">
-          <VStack align={'flex-start'}>
-            <HStack>
-              <VStack spacing={0} align="flex-start">
-                <FormLabel>Blood pressure</FormLabel>
-                <InputGroup>
-                  <Input
-                    type="number"
-                    name="diastolicPressure"
-                    borderTopEndRadius={0}
-                    borderEndEndRadius={0}
-                  />
-                  <InputLeftAddon children="/" borderRadius={0} />
-                  <Input
-                    type="number"
-                    name="systolicPressure"
-                    borderRadius={0}
-                  />
-                  <InputRightAddon children="mmHg" />
-                </InputGroup>
+    <FormProvider {...methods}>
+      <Flex
+        as="form"
+        align={'center'}
+        justify={'center'}
+        onSubmit={methods.handleSubmit(handleAttendance)}
+      >
+        <Stack
+          spacing={4}
+          w={'full'}
+          maxW={'5xl'}
+          bg={useColorModeValue('white', 'gray.700')}
+          rounded={'xl'}
+          boxShadow={'lg'}
+          p={6}
+          my={6}
+        >
+          <Heading lineHeight={1.1} fontSize={{ base: '2xl', sm: '3xl' }}>
+            {`Attendance of ${patient.name}`}
+          </Heading>
+          <Textarea
+            name="description"
+            label="Description"
+            validators={{ required: 'Description is required' }}
+          />
+          <Accordion multiple>
+            <AccordionTab header="Anthropometry">
+              <HStack>
+                <Input name="weight" label="Weight" />
+                <Input name="height" label="Height" />
+                <Box width={'80%'}>
+                  <FormLabel textAlign={'right'}>{label}</FormLabel>
+                  <InputGroup>
+                    <Tooltip title="Body mass index">
+                      <InputLeftAddon children="BMI" />
+                    </Tooltip>
+                    <Input
+                      name="bmi"
+                      isDisabled
+                      variant="flushed"
+                      paddingLeft={4}
+                    />
+                  </InputGroup>
+                </Box>
+              </HStack>
+            </AccordionTab>
+            <AccordionTab header="Vitals">
+              <VStack align={'flex-start'}>
+                <HStack>
+                  <VStack spacing={0} align="flex-start">
+                    <FormLabel>Blood pressure</FormLabel>
+                    <InputGroup>
+                      <Input
+                        name="diastolicPressure"
+                        borderTopEndRadius={0}
+                        borderEndEndRadius={0}
+                      />
+                      <InputLeftAddon children="/" borderRadius={0} />
+                      <Input name="systolicPressure" borderRadius={0} />
+                      <InputRightAddon children="mmHg" />
+                    </InputGroup>
+                  </VStack>
+                </HStack>
+                <VStack spacing={0} align="flex-start">
+                  <FormLabel>Temperature</FormLabel>
+                  <InputGroup>
+                    <Input
+                      name="temperature"
+                      borderTopEndRadius={0}
+                      borderEndEndRadius={0}
+                    />
+                    <InputRightAddon children="°C" />
+                  </InputGroup>
+                </VStack>
               </VStack>
-            </HStack>
-            <VStack spacing={0} align="flex-start">
-              <FormLabel>Temperature</FormLabel>
-              <InputGroup>
-                <Input
-                  type="number"
-                  name="temperature"
-                  borderTopEndRadius={0}
-                  borderEndEndRadius={0}
+            </AccordionTab>
+            <AccordionTab header="Requested and/or evaluated exams">
+              <Table
+                values={listOfExams}
+                header={
+                  <Tooltip title="Add an exam">
+                    <Button
+                      colorScheme="green"
+                      variant="solid"
+                      onClick={() => {}}
+                    >
+                      <GoPlusSmall />
+                    </Button>
+                  </Tooltip>
+                }
+              >
+                <Column field="name" header="Name" sortable />
+                <Column
+                  body={row => (
+                    <Button
+                      colorScheme="blue"
+                      variant="solid"
+                      marginRight={2}
+                      onClick={() => console.log(row)}
+                    >
+                      <FaTimes />
+                    </Button>
+                  )}
+                  exportable={false}
                 />
-                <InputRightAddon children="°C" />
-              </InputGroup>
-            </VStack>
-          </VStack>
-        </AccordionTab>
-        <AccordionTab header="Requested and/or evaluated exams">
-          <Table
-            values={listOfExams}
-            header={
-              <Tooltip title="Add an exam">
-                <Button colorScheme="green" variant="solid" onClick={() => {}}>
-                  <GoPlusSmall />
-                </Button>
-              </Tooltip>
-            }
-          >
-            <Column field="name" header="Name" sortable />
-            <Column
-              body={row => (
-                <Button
-                  colorScheme="blue"
-                  variant="solid"
-                  marginRight={2}
-                  onClick={() => console.log(row)}
-                >
-                  <FaTimes />
-                </Button>
-              )}
-              exportable={false}
-            />
-          </Table>
-        </AccordionTab>
-        <AccordionTab header="Prescription medicines">
-          <Table
-            values={listOfMedicines}
-            header={
-              <Tooltip title="Add a medicine">
-                <Button colorScheme="green" variant="solid" onClick={() => {}}>
-                  <GoPlusSmall />
-                </Button>
-              </Tooltip>
-            }
-          >
-            <Column field="name" header="Name" sortable />
-            <Column
-              body={row => (
-                <Button
-                  colorScheme="blue"
-                  variant="solid"
-                  marginRight={2}
-                  onClick={() => console.log(row)}
-                >
-                  <FaTimes />
-                </Button>
-              )}
-              exportable={false}
-            />
-          </Table>
-        </AccordionTab>
-      </Accordion>
-      <Button>Prescriptions</Button>
-    </FormLayout>
+              </Table>
+            </AccordionTab>
+            <AccordionTab header="Prescription medicines">
+              <Table
+                values={listOfMedicines}
+                header={
+                  <Tooltip title="Add a medicine">
+                    <Button
+                      colorScheme="green"
+                      variant="solid"
+                      onClick={() => {}}
+                    >
+                      <GoPlusSmall />
+                    </Button>
+                  </Tooltip>
+                }
+              >
+                <Column field="name" header="Name" sortable />
+                <Column
+                  body={row => (
+                    <Button
+                      colorScheme="blue"
+                      variant="solid"
+                      marginRight={2}
+                      onClick={() => console.log(row)}
+                    >
+                      <FaTimes />
+                    </Button>
+                  )}
+                  exportable={false}
+                />
+              </Table>
+            </AccordionTab>
+          </Accordion>
+          <Button>Prescriptions</Button>
+          <Stack spacing={6} direction={['column', 'row']}>
+            <Button
+              w="full"
+              colorScheme="red"
+              onClick={() => router.push('/dashboard')}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              w="full"
+              colorScheme="green"
+              isLoading={methods.formState.isSubmitting}
+              disabled={!methods.formState.isValid}
+              onClick={() => setAction('save')}
+              data-testid="save-form-button"
+            >
+              Save
+            </Button>
+            <Button
+              type="submit"
+              w="full"
+              colorScheme="blue"
+              isLoading={methods.formState.isSubmitting}
+              disabled={!methods.formState.isValid}
+              onClick={() => setAction('finalize')}
+              data-testid="finalize-form-button"
+            >
+              Finalize attendance
+            </Button>
+          </Stack>
+        </Stack>
+      </Flex>
+    </FormProvider>
   )
 }
 
@@ -226,6 +331,10 @@ export const getServerSideProps: GetServerSideProps = async ctx => {
   const { data } = await apiClient.get(`/attendances/${params?.id}`)
 
   return {
-    props: { patient: data?.patient, medicalRecord: data?.medicalRecord },
+    props: {
+      attendanceId: data?.id,
+      patient: data?.patient,
+      medicalRecord: data?.medicalRecord,
+    },
   }
 }

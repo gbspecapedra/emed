@@ -17,5 +17,5 @@ export type Attendance = {
   patient: Pick<Patient, 'name'>
   professional: Pick<Professional, 'name'>
 
-  record: MedicalRecord
+  medicalRecord: MedicalRecord
 }

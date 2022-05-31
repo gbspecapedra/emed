@@ -111,7 +111,15 @@ export const ListOfAttendances = ({
       {hasAttendances && (
         <Accordion allowToggle allowMultiple>
           {attendances.map(
-            ({ id, type, date, status, professional, patient, record }) => {
+            ({
+              id,
+              type,
+              date,
+              status,
+              professional,
+              patient,
+              medicalRecord,
+            }) => {
               let color = 'red'
               if (status === AttendanceStatus.IN_PROGRESS) {
                 color = 'yellow'
@@ -161,7 +169,54 @@ export const ListOfAttendances = ({
 
                   {!patient && (
                     <AccordionPanel pb={4}>
-                      {record?.description ?? 'Attendance not started'}
+                      <>
+                        {medicalRecord?.description ?? 'Attendance not started'}
+                        {medicalRecord?.description && (
+                          <>
+                            <Text paddingBottom={2}>
+                              {medicalRecord?.description}
+                            </Text>
+                            <Wrap justify={'space-between'}>
+                              <WrapItem>
+                                <Row
+                                  title="Weigth"
+                                  text={medicalRecord?.weight ?? '-'}
+                                />
+                              </WrapItem>
+                              <WrapItem>
+                                <Row
+                                  title="Height"
+                                  text={medicalRecord?.height ?? '-'}
+                                />
+                              </WrapItem>
+                              <WrapItem>
+                                <Row
+                                  title="BMI"
+                                  text={medicalRecord?.bmi ?? '-'}
+                                />
+                              </WrapItem>
+                            </Wrap>
+                            <Wrap justify={'space-between'}>
+                              <WrapItem>
+                                <Row
+                                  title="Blood pressure"
+                                  text={
+                                    medicalRecord.diastolicPressure
+                                      ? `${medicalRecord?.diastolicPressure}/${medicalRecord?.systolicPressure}`
+                                      : '-'
+                                  }
+                                />
+                              </WrapItem>
+                              <WrapItem>
+                                <Row
+                                  title="Temperature"
+                                  text={medicalRecord?.temperature ?? '-'}
+                                />
+                              </WrapItem>
+                            </Wrap>
+                          </>
+                        )}
+                      </>
                     </AccordionPanel>
                   )}
                 </AccordionItem>
