@@ -1,5 +1,5 @@
 import { Heading, HStack } from '@chakra-ui/react'
-import { State } from 'country-state-city'
+import { Country, State } from 'country-state-city'
 import { GetServerSideProps } from 'next'
 import { parseCookies } from 'nookies'
 import React from 'react'
@@ -22,11 +22,13 @@ export interface IProfessionalInputs {
   name: string
   registrationNumber?: number
   registrationState?: string
-  specialty: string
+  specialty?: string
   email: string
   oldPassword?: string
   password?: string
   passwordConfirmation?: string
+
+  country?: string
 }
 
 interface IUpdateProfessionalProps {
@@ -49,9 +51,10 @@ const UpdateProfessional: React.FC<IUpdateProfessionalProps> = ({
     defaultValues: { ...professional },
   })
 
-  const roleIsRequired = !!professional.role.match(
-    `^((?!(${ProfessionalRole.ADMIN}|${ProfessionalRole.RECEPTIONIST})).)*$`,
-  )
+  const watchCountry = methods.watch('country') ?? ''
+  const roleIsRequired =
+    professional.role === ProfessionalRole.DOCTOR ||
+    professional.role === ProfessionalRole.NURSE
 
   const handleUpdateProfessional: SubmitHandler<
     IProfessionalInputs
@@ -95,27 +98,48 @@ const UpdateProfessional: React.FC<IUpdateProfessionalProps> = ({
         })}
       />
       {professional.registrationNumber && (
-        <HStack>
+        <>
           <Input
             name="registrationNumber"
+            label="Registration Number"
             type="number"
             validators={{
               required: roleIsRequired && 'Registration number is required',
             }}
           />
-          <Select
-            name="registrationState"
-            options={State.getAllStates().map(({ name, isoCode }) => {
-              return {
-                label: name,
-                value: isoCode,
-              }
-            })}
-            validators={{
-              required: roleIsRequired && 'Registration state is required',
-            }}
-          />
-        </HStack>
+          <HStack>
+            <Select
+              name="country"
+              label="Country"
+              placeholder="Select an option"
+              options={Country.getAllCountries().map(({ name, isoCode }) => {
+                return {
+                  label: name,
+                  value: isoCode,
+                }
+              })}
+              validators={{
+                required: roleIsRequired && 'Registration country is required',
+              }}
+            />
+            <Select
+              name="registrationState"
+              label="State/Region/Province"
+              placeholder="Select an option"
+              options={State.getStatesOfCountry(watchCountry).map(
+                ({ name, isoCode }) => {
+                  return {
+                    label: name,
+                    value: isoCode,
+                  }
+                },
+              )}
+              validators={{
+                required: roleIsRequired && 'Registration state is required',
+              }}
+            />
+          </HStack>
+        </>
       )}
       <Input
         name="name"
@@ -123,19 +147,21 @@ const UpdateProfessional: React.FC<IUpdateProfessionalProps> = ({
         placeholder="Jane Doe"
         validators={{ required: 'Name is required' }}
       />
-      <Select
-        label="Specialty"
-        name="specialty"
-        options={specialties?.map(({ name }: Specialty) => {
-          return {
-            label: name,
-            value: name,
-          }
-        })}
-        validators={{
-          required: roleIsRequired && 'Specialty is required',
-        }}
-      />
+      {professional.specialty && (
+        <Select
+          label="Specialty"
+          name="specialty"
+          options={specialties?.map(({ name }: Specialty) => {
+            return {
+              label: name,
+              value: name,
+            }
+          })}
+          validators={{
+            required: roleIsRequired && 'Specialty is required',
+          }}
+        />
+      )}
       <Input
         name="email"
         label="Email"
@@ -145,7 +171,11 @@ const UpdateProfessional: React.FC<IUpdateProfessionalProps> = ({
       />
       {isOwnProfile && (
         <>
-          <Heading lineHeight={1.1} fontSize={{ base: '2xl', sm: '3xl' }}>
+          <Heading
+            lineHeight={1.1}
+            fontSize={{ base: '2xl', sm: '3xl' }}
+            paddingTop={2}
+          >
             Update Password
           </Heading>
           <Input

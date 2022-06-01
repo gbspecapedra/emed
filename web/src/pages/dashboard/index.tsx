@@ -1,6 +1,3 @@
-import { DatePicker } from '@/components/form/datePicker'
-import { Select } from '@/components/form/select'
-import { Textarea } from '@/components/form/textarea'
 import {
   Button,
   Flex,
@@ -55,6 +52,9 @@ import { useAuth } from '../../services/contexts/AuthContext'
 import { useNotification } from '../../services/hooks/useNotification'
 import { useRoles } from '../../services/hooks/useRoles'
 import { EMED_TOKEN, saveAsExcelFile } from '../../utils'
+import { DatePicker } from '@/components/form/datePicker'
+import { Select } from '@/components/form/select'
+import { Textarea } from '@/components/form/textarea'
 
 interface IAttendanceInputs {
   type?: AttendanceType
@@ -112,7 +112,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
           name="type"
           label="Type"
           placeholder="Select an option"
-          options={Object.keys(AttendanceType).map((key, index) => {
+          options={Object.keys(AttendanceType).map(key => {
             return {
               label: key,
               value: key,
@@ -244,7 +244,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
     }
   }
 
-  const handleUpdateAttendance = async (form: IAttendanceInputs) => {
+  const handleUpdateAttendance = async (_form: IAttendanceInputs) => {
     try {
       if (!selectedAppointment) return
       await api
@@ -272,7 +272,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
     }
   }
 
-  const [modalOnSubmit, setModalOnSubmit] = useState<(form: any) => void>(
+  const [modalOnSubmit, setModalOnSubmit] = useState<(_form: any) => void>(
     () => handleUpdateAttendance,
   )
 
@@ -399,7 +399,6 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
                   <MenuItem
                     icon={<FaUserTimes />}
                     onClick={() => {
-                      console.log(row)
                       setSelectedAppointment(row)
                       setIsConfirmationModal(true)
                       setModalHeader('Cancel an appointment')

@@ -1,17 +1,3 @@
-import { Input } from '@/components/form/input'
-import { FormLayout } from '@/components/form/layout/FormLayout'
-import { Textarea } from '@/components/form/textarea'
-import { MedicalRecord } from 'models/record.model'
-import { GetServerSideProps } from 'next'
-import { parseCookies } from 'nookies'
-import React, { useEffect, useMemo, useState } from 'react'
-import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
-import { api } from 'services/api'
-import { useNotification } from 'services/hooks/useNotification'
-import { Patient } from '../../../models/patient.model'
-import { getAPIClient } from '../../../services/axios'
-import { Accordion, AccordionTab } from 'primereact/accordion'
-import { calculateBMI, EMED_TOKEN, nullsToUndefined } from '../../../utils'
 import {
   Box,
   Button,
@@ -23,18 +9,30 @@ import {
   InputLeftAddon,
   InputRightAddon,
   Stack,
-  Text,
   useColorModeValue,
   VStack,
 } from '@chakra-ui/react'
-import Tooltip from '@/components/tooltip'
-import Table from '@/components/table'
 import { Exam } from 'models/exam.model'
-import { GoPlusSmall } from 'react-icons/go'
-import { Column } from 'primereact/column'
-import { FaTimes } from 'react-icons/fa'
 import { Medicine } from 'models/medicine.model'
+import { MedicalRecord } from 'models/record.model'
+import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
+import { parseCookies } from 'nookies'
+import { Accordion, AccordionTab } from 'primereact/accordion'
+import { Column } from 'primereact/column'
+import React, { useEffect, useState } from 'react'
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
+import { FaTimes } from 'react-icons/fa'
+import { GoPlusSmall } from 'react-icons/go'
+import { api } from 'services/api'
+import { useNotification } from 'services/hooks/useNotification'
+import { Patient } from '../../../models/patient.model'
+import { getAPIClient } from '../../../services/axios'
+import { calculateBMI, EMED_TOKEN, nullsToUndefined } from '../../../utils'
+import { Input } from '@/components/form/input'
+import { Textarea } from '@/components/form/textarea'
+import Table from '@/components/table'
+import Tooltip from '@/components/tooltip'
 
 interface IAttendanceInputs {
   description?: string
@@ -79,13 +77,12 @@ const Attendance: React.FC<IAttendanceProps> = ({
 
   useEffect(() => {
     methods.setValue('bmi', bmi)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleUpdateAttendance: SubmitHandler<
     IAttendanceInputs
   > = async values => {
-    console.log('save')
-    console.log(values)
     try {
       await api
         .put(`/records/${medicalRecord.id}`, {
@@ -109,7 +106,6 @@ const Attendance: React.FC<IAttendanceProps> = ({
   const handleFinalizeAttendance: SubmitHandler<
     IAttendanceInputs
   > = async values => {
-    console.log('finalize')
     try {
       await api
         .put(`/attendances/${attendanceId}`, {
@@ -168,7 +164,7 @@ const Attendance: React.FC<IAttendanceProps> = ({
                   <FormLabel textAlign={'right'}>{label}</FormLabel>
                   <InputGroup>
                     <Tooltip title="Body mass index">
-                      <InputLeftAddon children="BMI" />
+                      <InputLeftAddon>BMI</InputLeftAddon>
                     </Tooltip>
                     <Input
                       name="bmi"
@@ -191,9 +187,9 @@ const Attendance: React.FC<IAttendanceProps> = ({
                         borderTopEndRadius={0}
                         borderEndEndRadius={0}
                       />
-                      <InputLeftAddon children="/" borderRadius={0} />
+                      <InputLeftAddon borderRadius={0}>/</InputLeftAddon>
                       <Input name="systolicPressure" borderRadius={0} />
-                      <InputRightAddon children="mmHg" />
+                      <InputRightAddon>mmHg</InputRightAddon>
                     </InputGroup>
                   </VStack>
                 </HStack>
@@ -205,7 +201,7 @@ const Attendance: React.FC<IAttendanceProps> = ({
                       borderTopEndRadius={0}
                       borderEndEndRadius={0}
                     />
-                    <InputRightAddon children="°C" />
+                    <InputRightAddon>°C</InputRightAddon>
                   </InputGroup>
                 </VStack>
               </VStack>

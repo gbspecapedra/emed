@@ -44,8 +44,6 @@ interface IUpdatePatientProps {
 const UpdatePatient: React.FC<IUpdatePatientProps> = ({ patient, plans }) => {
   const notification = useNotification()
 
-  console.log(patient)
-
   const methods = useForm<IPatientInputs>({
     mode: 'onChange',
     defaultValues: { ...patient },

@@ -20,7 +20,7 @@ interface IInputProps extends ChakraInputProps {
   name: string
   type?: InputType
   label?: string
-  defaultValue?: string
+  defaultValue?: any
   validators?: IInputValidator
 }
 
@@ -28,7 +28,7 @@ export const Input: React.FC<IInputProps> = ({
   name,
   label,
   type = 'text',
-  defaultValue = '',
+  defaultValue = undefined,
   validators,
   ...props
 }) => {

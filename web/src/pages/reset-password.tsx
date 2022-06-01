@@ -6,7 +6,8 @@ import {
   Text,
   useColorModeValue,
 } from '@chakra-ui/react'
-import { NextPage } from 'next'
+import { useRouter } from 'next/router'
+import { ReactElement } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { Input } from '../components/form/input'
 import { useAuth } from '../services/contexts/AuthContext'
@@ -16,8 +17,9 @@ interface IResetPasswordInputs {
   email: string
 }
 
-const ResetPassword: NextPage = () => {
+const ResetPassword = () => {
   const { resetPassword } = useAuth()
+  const router = useRouter()
 
   const methods = useForm<IResetPasswordInputs>({
     mode: 'onChange',
@@ -68,7 +70,7 @@ const ResetPassword: NextPage = () => {
             placeholder="your-email@example.com"
             validators={emailValidator}
           />
-          <Stack spacing={6}>
+          <Stack>
             <Button
               type="submit"
               colorScheme="blue"
@@ -78,11 +80,22 @@ const ResetPassword: NextPage = () => {
             >
               Request Reset
             </Button>
+            <Button
+              w="full"
+              colorScheme="gray"
+              onClick={() => router.push('/')}
+            >
+              Return
+            </Button>
           </Stack>
         </Stack>
       </FormProvider>
     </Flex>
   )
+}
+
+ResetPassword.getLayout = function getLayout(page: ReactElement) {
+  return <>{page}</>
 }
 
 export default ResetPassword

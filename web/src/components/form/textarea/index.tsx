@@ -6,8 +6,8 @@ import {
   Textarea as ChakraTextarea,
   TextareaProps as ChakraTextareaProps,
 } from '@chakra-ui/react'
-import { IInputValidator } from 'models/interfaces'
 import { Controller, useFormContext } from 'react-hook-form'
+import { IInputValidator } from 'models/interfaces'
 
 type Resize = 'none' | 'block' | 'both' | 'horizontal' | 'inline' | 'vertical'
 
