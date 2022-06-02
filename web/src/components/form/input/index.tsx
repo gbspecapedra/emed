@@ -28,7 +28,7 @@ export const Input: React.FC<IInputProps> = ({
   name,
   label,
   type = 'text',
-  defaultValue = undefined,
+  defaultValue = '',
   validators,
   ...props
 }) => {

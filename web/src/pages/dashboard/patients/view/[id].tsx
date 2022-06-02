@@ -18,12 +18,7 @@ interface IViewPatientProps {
 
 const ViewPatient: React.FC<IViewPatientProps> = ({ patient }) => {
   return (
-    <ViewLayout
-      header={patient.name}
-      showTag
-      tag={patient.active}
-      returnTo="/dashboard/patients"
-    >
+    <ViewLayout header={patient.name} showTag tag={patient.active}>
       <Row title="Social Number" text={`${patient.socialNumber}`} />
       <Wrap justify={'space-between'}>
         <WrapItem>

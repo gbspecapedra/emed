@@ -1,3 +1,4 @@
+import { encode } from 'js-base64'
 import { parseCookies, destroyCookie, setCookie } from 'nookies'
 import {
   createContext,
@@ -22,9 +23,7 @@ type AuthContextData = {
   findUserByEmail: (
     _credentials: Pick<AuthenticationInputs, 'email'>,
   ) => Promise<void>
-  resetPassword: (
-    _credentials: Pick<AuthenticationInputs, 'password'>,
-  ) => Promise<void>
+  resetPassword: (_credentials: AuthenticationInputs) => Promise<void>
   professional: Professional | null
   isAuthenticated: boolean
   role?: ProfessionalRole
@@ -42,10 +41,6 @@ export function AuthProvider({ children }: IAuthProviderProps) {
   const [professional, setProfessional] = useState<Professional | null>(null)
   const isAuthenticated = !!professional
   const role = professional?.role
-
-  const [emailToResetPassword, setEmailToResetPassword] = useState<
-    string | null
-  >(null)
 
   useEffect(() => {
     const { [EMED_TOKEN]: token } = parseCookies()
@@ -98,8 +93,9 @@ export function AuthProvider({ children }: IAuthProviderProps) {
         .then(() => {
           destroyCookie(undefined, EMED_TOKEN)
           localStorage.removeItem(EMED_USER)
+
           setProfessional(null)
-          setEmailToResetPassword(null)
+
           notification.success({
             title: 'Successfully logged out!',
             to: '/',
@@ -119,13 +115,11 @@ export function AuthProvider({ children }: IAuthProviderProps) {
     try {
       await api
         .post('/find', credentials)
-        .then(({ data: user }) => {
-          console.log(user)
-          setEmailToResetPassword(user.email)
-
+        .then(({ data: { user } }) => {
           notification.success({
             title: 'Validated email.',
-            to: '/password/reset',
+            to: '/password/[email]',
+            query: { email: encode(user.email, true) },
           })
         })
         .catch(({ response }) =>
@@ -141,7 +135,7 @@ export function AuthProvider({ children }: IAuthProviderProps) {
   ) {
     try {
       await api
-        .post('/reset', { ...credentials, email: emailToResetPassword })
+        .post('/reset', credentials)
         .then(() => {
           notification.success({
             title: 'Password updated.',

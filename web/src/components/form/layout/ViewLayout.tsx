@@ -27,7 +27,6 @@ import { formatDate } from '../../../utils'
 interface IViewLayoutProps {
   children: ReactNode
   header: ReactNode
-  returnTo: string
   showTag?: boolean
   tag?: boolean
 }
@@ -35,7 +34,6 @@ interface IViewLayoutProps {
 export function ViewLayout({
   children,
   header,
-  returnTo,
   showTag,
   tag,
 }: IViewLayoutProps) {
@@ -69,11 +67,7 @@ export function ViewLayout({
           {children}
         </Stack>
         <Stack spacing={6} direction={['column', 'row']}>
-          <Button
-            w="full"
-            colorScheme="blue"
-            onClick={() => router.push(returnTo)}
-          >
+          <Button w="full" colorScheme="blue" onClick={() => router.back()}>
             Return
           </Button>
         </Stack>

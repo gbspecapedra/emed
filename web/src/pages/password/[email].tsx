@@ -5,6 +5,8 @@ import {
   Stack,
   useColorModeValue,
 } from '@chakra-ui/react'
+import { decode } from 'js-base64'
+import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import { ReactElement, useRef } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
@@ -17,7 +19,13 @@ interface IResetPasswordInputs {
   passwordConfirmation: string
 }
 
-const ResetPassword = () => {
+interface IResetPasswordProps {
+  email: string
+}
+
+const ResetPassword = ({ email }: IResetPasswordProps) => {
+  const emailDecoded = decode(email)
+
   const { resetPassword } = useAuth()
   const router = useRouter()
 
@@ -30,7 +38,7 @@ const ResetPassword = () => {
   const onSubmitHandler: SubmitHandler<IResetPasswordInputs> = async (
     form: IResetPasswordInputs,
   ) => {
-    await resetPassword(form)
+    await resetPassword({ ...form, email: emailDecoded })
   }
 
   return (
@@ -96,7 +104,7 @@ const ResetPassword = () => {
             <Button
               w="full"
               colorScheme="gray"
-              onClick={() => router.push('/')}
+              onClick={() => router.replace('/')}
             >
               Cancel
             </Button>
@@ -112,3 +120,11 @@ ResetPassword.getLayout = function getLayout(page: ReactElement) {
 }
 
 export default ResetPassword
+
+export const getServerSideProps: GetServerSideProps = async ctx => {
+  return {
+    props: {
+      email: ctx.params?.email,
+    },
+  }
+}

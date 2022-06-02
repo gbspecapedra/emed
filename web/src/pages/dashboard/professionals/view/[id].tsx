@@ -20,12 +20,7 @@ const ViewProfessional: React.FC<IViewProfessionalProps> = ({
   professional,
 }) => {
   return (
-    <ViewLayout
-      header={professional.name}
-      showTag
-      tag={professional.active}
-      returnTo="/dashboard/professionals"
-    >
+    <ViewLayout header={professional.name} showTag tag={professional.active}>
       <Wrap justify={'space-between'}>
         <WrapItem>
           <Row title="Role" text={professional.role} />

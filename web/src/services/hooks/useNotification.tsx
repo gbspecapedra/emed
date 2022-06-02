@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router'
+import { ParsedUrlQueryInput } from 'querystring'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 
@@ -6,6 +7,7 @@ type ToastProps = {
   title?: string
   message?: string
   to?: string
+  query?: string | ParsedUrlQueryInput | null | undefined
 }
 
 export const useNotification = () => {
@@ -32,7 +34,11 @@ export const useNotification = () => {
       title: toast?.title,
       text: toast?.message,
       didRender: () => {
-        toast?.to && router.push(toast?.to)
+        toast?.to &&
+          router.push({
+            pathname: toast?.to,
+            query: toast.query,
+          })
       },
     })
   }
