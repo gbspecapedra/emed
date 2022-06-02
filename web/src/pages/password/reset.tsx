@@ -3,18 +3,18 @@ import {
   Flex,
   Heading,
   Stack,
-  Text,
   useColorModeValue,
 } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
-import { ReactElement } from 'react'
+import { ReactElement, useRef } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
-import { Input } from '../components/form/input'
-import { useAuth } from '../services/contexts/AuthContext'
-import { emailValidator } from '../utils/validators'
+import { Input } from '@/components/form/input'
+import { useAuth } from '@/services/contexts/AuthContext'
+import { passwordStrengthValidator } from '@/utils/validators/passwordValidator'
 
 interface IResetPasswordInputs {
-  email: string
+  password: string
+  passwordConfirmation: string
 }
 
 const ResetPassword = () => {
@@ -24,6 +24,8 @@ const ResetPassword = () => {
   const methods = useForm<IResetPasswordInputs>({
     mode: 'onChange',
   })
+  const password = useRef({})
+  password.current = methods.watch('password', '')
 
   const onSubmitHandler: SubmitHandler<IResetPasswordInputs> = async (
     form: IResetPasswordInputs,
@@ -56,19 +58,30 @@ const ResetPassword = () => {
           })}
         >
           <Heading lineHeight={1.1} fontSize={{ base: '2xl', md: '3xl' }}>
-            Forgot your password?
+            Enter new password
           </Heading>
-          <Text
-            fontSize={{ base: 'sm', sm: 'md' }}
-            color={useColorModeValue('gray.800', 'gray.400')}
-          >
-            You&apos;ll get an email with a new password
-          </Text>
           <Input
-            name="email"
-            type="email"
-            placeholder="your-email@example.com"
-            validators={emailValidator}
+            name="password"
+            label="Password"
+            type="password"
+            validators={passwordStrengthValidator}
+          />
+          <Input
+            name="passwordConfirmation"
+            label="Password Confirmation"
+            type="password"
+            validators={{
+              required: 'Confirm password is required',
+              validate: value => {
+                if (password.current) {
+                  return (
+                    password.current === value ||
+                    'The password and confirmation do not match'
+                  )
+                }
+                return false
+              },
+            }}
           />
           <Stack>
             <Button
@@ -78,14 +91,14 @@ const ResetPassword = () => {
               isLoading={methods.formState.isSubmitting}
               data-testid="reset-button"
             >
-              Request Reset
+              Update Password
             </Button>
             <Button
               w="full"
               colorScheme="gray"
               onClick={() => router.push('/')}
             >
-              Return
+              Cancel
             </Button>
           </Stack>
         </Stack>

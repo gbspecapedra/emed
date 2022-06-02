@@ -71,10 +71,7 @@ const Home = () => {
               />
               <Stack spacing={10}>
                 <Flex align={'start'} justify={'right'}>
-                  <TextButtonLink
-                    label="Forgot my password"
-                    href="/reset-password"
-                  />
+                  <TextButtonLink label="Forgot my password" href="/password" />
                 </Flex>
                 <Button
                   type="submit"

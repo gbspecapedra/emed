@@ -17,9 +17,14 @@ import { useNotification } from '../hooks/useNotification'
 type AuthenticationInputs = Pick<Professional, 'email' | 'password'>
 
 type AuthContextData = {
-  signIn: (_credentials: AuthenticationInputs) => void
+  signIn: (_credentials: AuthenticationInputs) => Promise<void>
   signOut: () => Promise<void>
-  resetPassword: (_email: Pick<AuthenticationInputs, 'email'>) => Promise<void>
+  findUserByEmail: (
+    _credentials: Pick<AuthenticationInputs, 'email'>,
+  ) => Promise<void>
+  resetPassword: (
+    _credentials: Pick<AuthenticationInputs, 'password'>,
+  ) => Promise<void>
   professional: Professional | null
   isAuthenticated: boolean
   role?: ProfessionalRole
@@ -37,6 +42,10 @@ export function AuthProvider({ children }: IAuthProviderProps) {
   const [professional, setProfessional] = useState<Professional | null>(null)
   const isAuthenticated = !!professional
   const role = professional?.role
+
+  const [emailToResetPassword, setEmailToResetPassword] = useState<
+    string | null
+  >(null)
 
   useEffect(() => {
     const { [EMED_TOKEN]: token } = parseCookies()
@@ -90,6 +99,7 @@ export function AuthProvider({ children }: IAuthProviderProps) {
           destroyCookie(undefined, EMED_TOKEN)
           localStorage.removeItem(EMED_USER)
           setProfessional(null)
+          setEmailToResetPassword(null)
           notification.success({
             title: 'Successfully logged out!',
             to: '/',
@@ -103,13 +113,38 @@ export function AuthProvider({ children }: IAuthProviderProps) {
     }
   }
 
-  async function resetPassword(email: Pick<AuthenticationInputs, 'email'>) {
+  async function findUserByEmail(
+    credentials: Pick<AuthenticationInputs, 'email'>,
+  ) {
     try {
       await api
-        .post('/reset', email)
+        .post('/find', credentials)
+        .then(({ data: user }) => {
+          console.log(user)
+          setEmailToResetPassword(user.email)
+
+          notification.success({
+            title: 'Validated email.',
+            to: '/password/reset',
+          })
+        })
+        .catch(({ response }) =>
+          notification.error({ message: response.data.error }),
+        )
+    } catch (error) {
+      notification.error()
+    }
+  }
+
+  async function resetPassword(
+    credentials: Pick<AuthenticationInputs, 'password'>,
+  ) {
+    try {
+      await api
+        .post('/reset', { ...credentials, email: emailToResetPassword })
         .then(() => {
           notification.success({
-            title: 'Password sent to your email',
+            title: 'Password updated.',
             to: '/',
           })
         })
@@ -126,6 +161,7 @@ export function AuthProvider({ children }: IAuthProviderProps) {
       value={{
         signIn,
         signOut,
+        findUserByEmail,
         resetPassword,
         professional,
         isAuthenticated,
