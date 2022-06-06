@@ -15,6 +15,7 @@ interface ISelectProps extends ChakraSelectProps {
   options: Options[]
   label?: string
   defaultValue?: string
+  placeholder?: string
   validators?: IInputValidator
 }
 
@@ -23,6 +24,7 @@ export const Select: React.FC<ISelectProps> = ({
   label,
   options,
   defaultValue = '',
+  placeholder = 'Select an option',
   validators,
   ...props
 }) => {
@@ -47,6 +49,7 @@ export const Select: React.FC<ISelectProps> = ({
               autoFocus
               id={field.name}
               name={field.name}
+              placeholder={placeholder}
               _placeholder={{ color: 'gray.500' }}
               data-testid={`select-${name}`}
             >

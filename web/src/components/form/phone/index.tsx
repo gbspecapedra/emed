@@ -40,6 +40,7 @@ export const InputPhone: React.FC<IInputPhoneProps> = ({
             enableAreaCodes
             inputStyle={{
               height: '2.5rem',
+              borderColor: !!errors[name] ? 'red' : 'inherit',
             }}
             data-testid={`input-${name}`}
           />

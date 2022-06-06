@@ -92,25 +92,29 @@ const CreateProfessional: React.FC<ICreateProfessionalProps> = ({
             label="Registration Number"
             type="number"
             placeholder="000000"
-            validators={{ required: isRequiredForRole }}
+            validators={{
+              required: isRequiredForRole && 'Registration number is required',
+            }}
           />
           <HStack>
             <Select
               name="country"
               label="Country"
-              placeholder="Select an option"
               options={Country.getAllCountries().map(({ name, isoCode }) => {
                 return {
                   label: name,
                   value: isoCode,
                 }
               })}
-              validators={{ required: isRequiredForRole }}
+              validators={{
+                required:
+                  isRequiredForRole &&
+                  'Country of your registration is required',
+              }}
             />
             <Select
               name="registrationState"
               label="State/Region/Province"
-              placeholder="Select an option"
               options={State.getStatesOfCountry(watchCountry).map(
                 ({ name, isoCode }) => {
                   return {
@@ -119,7 +123,10 @@ const CreateProfessional: React.FC<ICreateProfessionalProps> = ({
                   }
                 },
               )}
-              validators={{ required: isRequiredForRole }}
+              validators={{
+                required:
+                  isRequiredForRole && 'State of your registration is required',
+              }}
             />
           </HStack>
         </>
@@ -134,7 +141,6 @@ const CreateProfessional: React.FC<ICreateProfessionalProps> = ({
         <Select
           label="Specialty"
           name="specialty"
-          placeholder="Select an option"
           options={specialties.map(({ name }: Specialty) => {
             return {
               label: name,

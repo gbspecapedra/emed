@@ -106,7 +106,6 @@ const UpdatePatient: React.FC<IUpdatePatientProps> = ({ patient, plans }) => {
         <Select
           name="gender"
           label="Gender"
-          placeholder="Select an option"
           options={GENDER.map(({ value }) => {
             return {
               label: value,
@@ -132,7 +131,6 @@ const UpdatePatient: React.FC<IUpdatePatientProps> = ({ patient, plans }) => {
         <Select
           name="country"
           label="Country"
-          placeholder="Select an option"
           options={Country.getAllCountries().map(({ name, isoCode }) => {
             return {
               label: name,
@@ -144,7 +142,6 @@ const UpdatePatient: React.FC<IUpdatePatientProps> = ({ patient, plans }) => {
         <Select
           name="state"
           label="State/Region/Province"
-          placeholder="Select an option"
           options={State.getStatesOfCountry(watchCountry).map(
             ({ name, isoCode }) => {
               return {
@@ -161,7 +158,6 @@ const UpdatePatient: React.FC<IUpdatePatientProps> = ({ patient, plans }) => {
         <Select
           name="city"
           label="City"
-          placeholder="Select an option"
           options={City.getCitiesOfState(watchCountry, watchState).map(
             ({ name }) => {
               return {
@@ -184,7 +180,6 @@ const UpdatePatient: React.FC<IUpdatePatientProps> = ({ patient, plans }) => {
       <Select
         name="healthPlanId"
         label="Health Plan"
-        placeholder="Select an option"
         options={plans.map(({ id, registrationNumber, name }: HealthPlan) => {
           return {
             label: `${name} - ${registrationNumber}`,

@@ -13,7 +13,7 @@ interface IFormLayoutProps<T> {
   children: ReactNode
   methods: UseFormReturn<T, any>
   header: ReactNode
-  returnTo: string
+  returnTo?: string
   onSubmit: SubmitHandler<T>
 }
 
@@ -51,7 +51,7 @@ export function FormLayout<T>({
             <Button
               w="full"
               colorScheme="red"
-              onClick={() => router.push(returnTo)}
+              onClick={() => returnTo && router.push(returnTo)}
             >
               Cancel
             </Button>

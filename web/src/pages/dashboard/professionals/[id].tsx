@@ -2,7 +2,7 @@ import { Heading, HStack } from '@chakra-ui/react'
 import { Country, State } from 'country-state-city'
 import { GetServerSideProps } from 'next'
 import { parseCookies } from 'nookies'
-import React from 'react'
+import React, { useRef } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { Input } from '../../../components/form/input'
 import { FormLayout } from '../../../components/form/layout/FormLayout'
@@ -17,6 +17,7 @@ import { useNotification } from '../../../services/hooks/useNotification'
 import { useRoles } from '../../../services/hooks/useRoles'
 import { EMED_TOKEN } from '../../../utils'
 import { emailValidator } from '../../../utils/validators'
+import { passwordStrengthValidator } from '@/utils/validators/passwordValidator'
 
 export interface IProfessionalInputs {
   name: string
@@ -50,6 +51,8 @@ const UpdateProfessional: React.FC<IUpdateProfessionalProps> = ({
     mode: 'onChange',
     defaultValues: { ...professional },
   })
+  const password = useRef<{}>()
+  password.current = methods.watch('password', '')
 
   const watchCountry = methods.watch('country') ?? ''
   const roleIsRequired =
@@ -111,7 +114,6 @@ const UpdateProfessional: React.FC<IUpdateProfessionalProps> = ({
             <Select
               name="country"
               label="Country"
-              placeholder="Select an option"
               options={Country.getAllCountries().map(({ name, isoCode }) => {
                 return {
                   label: name,
@@ -125,7 +127,6 @@ const UpdateProfessional: React.FC<IUpdateProfessionalProps> = ({
             <Select
               name="registrationState"
               label="State/Region/Province"
-              placeholder="Select an option"
               options={State.getStatesOfCountry(watchCountry).map(
                 ({ name, isoCode }) => {
                   return {
@@ -188,13 +189,24 @@ const UpdateProfessional: React.FC<IUpdateProfessionalProps> = ({
             name="password"
             label="Password"
             type="password"
-            validators={{ required: 'A new password is required' }}
+            validators={passwordStrengthValidator}
           />
           <Input
-            name="password_confirmation"
+            name="passwordConfirmation"
             label="Password Confirmation"
             type="password"
-            validators={{ required: 'A password confirmation is required' }}
+            validators={{
+              required: 'Confirm password is required',
+              validate: value => {
+                if (password.current) {
+                  return (
+                    password.current === value ||
+                    'The password and confirmation do not match'
+                  )
+                }
+                return false
+              },
+            }}
           />
         </>
       )}

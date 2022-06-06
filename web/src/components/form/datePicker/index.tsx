@@ -1,5 +1,6 @@
 import { FormControl, FormErrorMessage, FormLabel } from '@chakra-ui/react'
 import { Calendar, CalendarProps } from 'primereact/calendar'
+import { classNames } from 'primereact/utils'
 import React from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { IInputValidator } from '../../../models/interfaces'
@@ -50,6 +51,7 @@ export const DatePicker: React.FC<IDatePickerProps> = ({
             showTime={showTime}
             readOnlyInput
             hideOnDateTimeSelect
+            className={classNames({ 'p-invalid': !!errors[name] })}
             style={{
               height: !inline && '2.5rem',
               width: 'inherit',

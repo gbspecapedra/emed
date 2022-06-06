@@ -21,7 +21,6 @@ import {
   FaTrashAlt,
   FaUserCheck,
   FaUserEdit,
-  FaUserPlus,
   FaUserTimes,
 } from 'react-icons/fa'
 import Table from '../../../components/table'
@@ -167,21 +166,11 @@ const Professionals: React.FC<IProfessionalsProps> = ({ professionals }) => {
     <>
       <ConfirmDialog />
       <Table
+        name="professional"
         values={listOfProfessionals}
-        header={
-          <>
-            {isAdmin && (
-              <Tooltip title="Create new professional">
-                <Button
-                  colorScheme="green"
-                  variant="solid"
-                  onClick={() => router.push(`/dashboard/professionals/create`)}
-                >
-                  <FaUserPlus />
-                </Button>
-              </Tooltip>
-            )}
-          </>
+        canManageCreateButton={isAdmin}
+        onClickCreateButton={() =>
+          router.push(`/dashboard/professionals/create`)
         }
       >
         <Column field="registration" header="Code" sortable />

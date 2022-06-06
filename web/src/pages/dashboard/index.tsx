@@ -7,18 +7,16 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  SimpleGrid,
   Stack,
   Tag,
   TagLabel,
-  VStack,
 } from '@chakra-ui/react'
 import { format } from 'date-fns'
 import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import { parseCookies } from 'nookies'
-
 import { Column } from 'primereact/column'
+
 import React, { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -32,12 +30,9 @@ import {
   FaUserSlash,
   FaUserTimes,
 } from 'react-icons/fa'
-import { GoPlus } from 'react-icons/go'
-import { SiMicrosoftexcel } from 'react-icons/si'
 import Modal from '../../components/modal'
 import Table from '../../components/table'
 import Tooltip from '../../components/tooltip'
-import { Professional } from '../../models'
 
 import { Attendance } from '../../models/attendance.model'
 import {
@@ -45,15 +40,14 @@ import {
   AttendanceType,
   ProfessionalRole,
 } from '../../models/enums'
-import { Patient } from '../../models/patient.model'
 import { api } from '../../services/api'
 import { getAPIClient } from '../../services/axios'
 import { useAuth } from '../../services/contexts/AuthContext'
 import { useNotification } from '../../services/hooks/useNotification'
 import { useRoles } from '../../services/hooks/useRoles'
-import { EMED_TOKEN, saveAsExcelFile } from '../../utils'
+import { EMED_TOKEN } from '../../utils'
+import CreateAttendance from './_createAttendance'
 import { DatePicker } from '@/components/form/datePicker'
-import { Select } from '@/components/form/select'
 import { Textarea } from '@/components/form/textarea'
 
 interface IAttendanceInputs {
@@ -77,10 +71,6 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
 
   const [listOfAttendances, setListOfAttendances] =
     useState<Attendance[]>(attendances)
-  const [listOfPatients, setListOfPatients] = useState<Patient[]>([])
-  const [listOfProfessionals, setListOfProfessionals] = useState<
-    Professional[]
-  >([])
 
   const [isShowingModal, setIsShowingModal] = useState<boolean>(false)
   const [isConfirmationModal, setIsConfirmationModal] = useState<boolean>(false)
@@ -91,71 +81,6 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
   const methods = useForm<IAttendanceInputs>({
     mode: 'onChange',
   })
-
-  const createAttendance = (
-    <SimpleGrid columns={2} spacing={10}>
-      <DatePicker
-        name="date"
-        label="Date"
-        placeholder="DD/MM/YYYY"
-        minDate={new Date()}
-        disabledDays={[0, 6]}
-        showTime
-        inline
-        showIcon={false}
-        stepMinute={15}
-        validators={{ required: 'Date is required' }}
-      />
-
-      <VStack justify={'flex-start'} spacing={10}>
-        <Select
-          name="type"
-          label="Type"
-          placeholder="Select an option"
-          options={Object.keys(AttendanceType).map(key => {
-            return {
-              label: key,
-              value: key,
-            }
-          })}
-          validators={{ required: 'Attendance type is required' }}
-        />
-
-        <Select
-          name="professional"
-          label="Professional"
-          placeholder="Select an option"
-          options={listOfProfessionals
-            .filter(professional => {
-              if (selectedAppointment?.type === AttendanceType.TRIAGE) {
-                return professional.role === ProfessionalRole.NURSE
-              }
-              return professional.role === ProfessionalRole.DOCTOR
-            })
-            .map(({ id, name }) => {
-              return {
-                label: name,
-                value: id.toString(),
-              }
-            })}
-          validators={{ required: 'Professional is required' }}
-        />
-
-        <Select
-          name="patient"
-          label="Patient"
-          placeholder="Select an option"
-          options={listOfPatients.map(({ id, name }) => {
-            return {
-              label: name,
-              value: id.toString(),
-            }
-          })}
-          validators={{ required: 'Patient is required' }}
-        />
-      </VStack>
-    </SimpleGrid>
-  )
 
   const rescheduleAttendance = useMemo(
     () => (
@@ -211,37 +136,6 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
     const response = await api.get('/attendances')
     setSelectedAppointment(null)
     setListOfAttendances(response.data)
-  }
-
-  async function fetchPatients() {
-    const response = await api.get('/patients')
-    setListOfPatients(response.data)
-  }
-
-  async function fetchProfessionals() {
-    const response = await api.get('/professionals')
-    setListOfProfessionals(response.data)
-  }
-
-  const handleCreateAttendance = async (form: IAttendanceInputs) => {
-    try {
-      await api
-        .post('/attendances', {
-          type: form.type,
-          professionalId: Number(form.professional),
-          patientId: Number(form.patient),
-          date: form.date,
-        })
-        .then(() => {
-          notification.success({
-            title: 'Attendance created!',
-          })
-          refetchAttendances()
-        })
-        .catch(({ response }) => notification.error(response.data.error))
-    } catch (error) {
-      notification.error()
-    }
   }
 
   const handleUpdateAttendance = async (_form: IAttendanceInputs) => {
@@ -316,18 +210,6 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
     }
   }
 
-  const handleExportToExcel = () => {
-    import('xlsx').then(xlsx => {
-      const worksheet = xlsx.utils.json_to_sheet(attendances)
-      const workbook = { Sheets: { data: worksheet }, SheetNames: ['data'] }
-      const excelBuffer = xlsx.write(workbook, {
-        bookType: 'xlsx',
-        type: 'array',
-      })
-      saveAsExcelFile(excelBuffer, 'attendances')
-    })
-  }
-
   const handleCloseModal = () => {
     setSelectedAppointment(null)
     setIsShowingModal(false)
@@ -389,24 +271,24 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
                     onClick={() => {
                       setSelectedAppointment({ ...row, date: undefined })
                       setIsConfirmationModal(true)
-                      setModalHeader('Reschedule an appointment')
+                      setModalHeader('Reschedule attendance')
                       setModalBody(rescheduleAttendance)
                       setIsShowingModal(true)
                     }}
                   >
-                    Reschedule appointment
+                    Reschedule attendance
                   </MenuItem>
                   <MenuItem
                     icon={<FaUserTimes />}
                     onClick={() => {
                       setSelectedAppointment(row)
                       setIsConfirmationModal(true)
-                      setModalHeader('Cancel an appointment')
+                      setModalHeader('Cancel attendance')
                       setModalBody(cancelAttendance)
                       setIsShowingModal(true)
                     }}
                   >
-                    Cancel appointment
+                    Cancel attendance
                   </MenuItem>
                 </>
               )}
@@ -416,7 +298,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
                 router.push(`/dashboard/patients/view/${row.patientId}`)
               }
             >
-              Medical Records
+              Medical records
             </MenuItem>
           </MenuList>
         </Menu>
@@ -427,39 +309,17 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
   return (
     <>
       <Table
+        name="attendance"
         values={listOfAttendances}
-        header={
-          <>
-            <Tooltip title="Export to Excel">
-              <Button
-                type="button"
-                colorScheme="gray"
-                onClick={handleExportToExcel}
-              >
-                <SiMicrosoftexcel />
-              </Button>
-            </Tooltip>
-            {canManageAppointments && (
-              <Tooltip title="Create new appointment">
-                <Button
-                  colorScheme="green"
-                  variant="solid"
-                  onClick={async () => {
-                    await fetchPatients()
-                    await fetchProfessionals()
-                    setModalSize('4xl')
-                    setModalHeader('Create appointment')
-                    setModalBody(createAttendance)
-                    setModalOnSubmit(() => handleCreateAttendance)
-                    setIsShowingModal(true)
-                  }}
-                >
-                  <GoPlus />
-                </Button>
-              </Tooltip>
-            )}
-          </>
+        toggleable
+        panelContent={
+          <CreateAttendance
+            selectedAppointment={selectedAppointment}
+            refetch={refetchAttendances}
+          />
         }
+        canManageCreateButton={canManageAppointments}
+        onClickCreateButton={() => {}}
       >
         <Column field="patient.name" header="Patient" sortable />
         <Column field="professional.name" header="Professional" sortable />

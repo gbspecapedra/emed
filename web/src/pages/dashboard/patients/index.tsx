@@ -21,7 +21,6 @@ import {
   FaTrashAlt,
   FaUserCheck,
   FaUserEdit,
-  FaUserPlus,
   FaUserTimes,
 } from 'react-icons/fa'
 import Table from '../../../components/table'
@@ -140,7 +139,7 @@ const Patients: React.FC<IPatientsProps> = ({ patients }) => {
                     onClick={() => {
                       confirmDialog({
                         message: `Are you sure? You can't undo this action afterwards.`,
-                        header: 'Delete Professional',
+                        header: 'Delete Patient',
                         icon: 'pi pi-exclamation-triangle',
                         acceptClassName: 'p-button-danger',
                         accept: () => handleDeletePatient(row.id),
@@ -162,22 +161,10 @@ const Patients: React.FC<IPatientsProps> = ({ patients }) => {
     <>
       <ConfirmDialog />
       <Table
+        name="patient"
         values={listOfPatients}
-        header={
-          <>
-            {canManagePatients && (
-              <Tooltip title="Create new patient">
-                <Button
-                  colorScheme="green"
-                  variant="solid"
-                  onClick={() => router.push(`/dashboard/patients/create`)}
-                >
-                  <FaUserPlus />
-                </Button>
-              </Tooltip>
-            )}
-          </>
-        }
+        canManageCreateButton={canManagePatients}
+        onClickCreateButton={() => router.push(`/dashboard/patients/create`)}
       >
         <Column field="socialNumber" header="Social Number" sortable />
         <Column field="name" header="Name" sortable />
