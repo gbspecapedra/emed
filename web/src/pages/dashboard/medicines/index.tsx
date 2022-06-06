@@ -3,7 +3,7 @@ import { parseCookies } from 'nookies'
 import { Column } from 'primereact/column'
 
 import React from 'react'
-import Table from '../../../components/table'
+import Paginator from '../../../components/paginator'
 
 import { Medicine } from '../../../models/medicine.model'
 import { getAPIClient } from '../../../services/axios'
@@ -15,13 +15,17 @@ interface IMedicinesProps {
 
 const Medicines: React.FC<IMedicinesProps> = ({ medicines }) => {
   return (
-    <Table values={medicines}>
+    <Paginator
+      name="medicine"
+      values={medicines}
+      onClickCreateButton={() => {}}
+    >
       <Column field="name" header="Name" sortable />
       <Column field="substance" header="Substance" sortable />
       <Column field="producer" header="Producer" sortable />
       <Column field="concentration" header="Concentration" sortable />
       <Column field="usage" header="Usage" sortable />
-    </Table>
+    </Paginator>
   )
 }
 

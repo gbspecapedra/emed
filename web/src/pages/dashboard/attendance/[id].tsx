@@ -14,25 +14,26 @@ import {
 } from '@chakra-ui/react'
 import { Exam } from 'models/exam.model'
 import { Medicine } from 'models/medicine.model'
-import { MedicalRecord } from 'models/record.model'
 import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import { parseCookies } from 'nookies'
 import { Accordion, AccordionTab } from 'primereact/accordion'
 import { Column } from 'primereact/column'
+import { DataTable } from 'primereact/datatable'
 import React, { useEffect, useState } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { FaTimes } from 'react-icons/fa'
-import { GoPlusSmall } from 'react-icons/go'
+import { GoPlus } from 'react-icons/go'
 import { api } from 'services/api'
 import { useNotification } from 'services/hooks/useNotification'
-import { Patient } from '../../../models/patient.model'
 import { getAPIClient } from '../../../services/axios'
 import { calculateBMI, EMED_TOKEN, nullsToUndefined } from '../../../utils'
 import { Input } from '@/components/form/input'
+import { Select } from '@/components/form/select'
 import { Textarea } from '@/components/form/textarea'
 import Table from '@/components/table'
 import Tooltip from '@/components/tooltip'
+import { Attendance } from '@/models/attendance.model'
 
 interface IAttendanceInputs {
   description?: string
@@ -46,14 +47,14 @@ interface IAttendanceInputs {
 
 interface IAttendanceProps {
   attendanceId: number
-  patient: Patient
-  medicalRecord: MedicalRecord
+  attendance: Attendance
+  exams: Exam[]
 }
 
 const Attendance: React.FC<IAttendanceProps> = ({
   attendanceId,
-  patient,
-  medicalRecord,
+  attendance: { patient, medicalRecord },
+  exams,
 }) => {
   const router = useRouter()
   const notification = useNotification()
@@ -210,23 +211,33 @@ const Attendance: React.FC<IAttendanceProps> = ({
               <Table
                 values={listOfExams}
                 header={
-                  <Tooltip title="Add an exam">
+                  <HStack>
+                    <Select
+                      name="exam"
+                      options={exams.map(({ id, name }: Exam) => {
+                        return {
+                          label: name,
+                          value: `${id}`,
+                        }
+                      })}
+                    />
                     <Button
                       colorScheme="green"
-                      variant="solid"
+                      variant="outline"
+                      marginRight={2}
                       onClick={() => {}}
                     >
-                      <GoPlusSmall />
+                      <GoPlus />
                     </Button>
-                  </Tooltip>
+                  </HStack>
                 }
               >
-                <Column field="name" header="Name" sortable />
+                <Column field="name"></Column>
                 <Column
                   body={row => (
                     <Button
                       colorScheme="blue"
-                      variant="solid"
+                      variant="ghost"
                       marginRight={2}
                       onClick={() => console.log(row)}
                     >
@@ -238,21 +249,8 @@ const Attendance: React.FC<IAttendanceProps> = ({
               </Table>
             </AccordionTab>
             <AccordionTab header="Prescription medicines">
-              <Table
-                values={listOfMedicines}
-                header={
-                  <Tooltip title="Add a medicine">
-                    <Button
-                      colorScheme="green"
-                      variant="solid"
-                      onClick={() => {}}
-                    >
-                      <GoPlusSmall />
-                    </Button>
-                  </Tooltip>
-                }
-              >
-                <Column field="name" header="Name" sortable />
+              <DataTable value={listOfMedicines} responsiveLayout="scroll">
+                <Column field="name" header="Name"></Column>
                 <Column
                   body={row => (
                     <Button
@@ -266,7 +264,7 @@ const Attendance: React.FC<IAttendanceProps> = ({
                   )}
                   exportable={false}
                 />
-              </Table>
+              </DataTable>
             </AccordionTab>
           </Accordion>
           <Button>Prescriptions</Button>
@@ -324,13 +322,16 @@ export const getServerSideProps: GetServerSideProps = async ctx => {
   }
 
   const { params } = ctx
-  const { data } = await apiClient.get(`/attendances/${params?.id}`)
+  const attendance = await apiClient.get(`/attendances/${params?.id}`)
+  const exams = await apiClient.get('/exams')
+  const medicines = await apiClient.get('/medicines')
 
   return {
     props: {
-      attendanceId: data?.id,
-      patient: data?.patient,
-      medicalRecord: data?.medicalRecord,
+      attendanceId: attendance?.data?.id,
+      attendance: attendance?.data,
+      exams: exams.data,
+      medicines: medicines?.data,
     },
   }
 }

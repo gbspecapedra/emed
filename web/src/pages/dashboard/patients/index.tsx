@@ -23,7 +23,7 @@ import {
   FaUserEdit,
   FaUserTimes,
 } from 'react-icons/fa'
-import Table from '../../../components/table'
+import Paginator from '../../../components/paginator'
 import Tooltip from '../../../components/tooltip'
 import { Patient } from '../../../models/patient.model'
 import { api } from '../../../services/api'
@@ -160,7 +160,7 @@ const Patients: React.FC<IPatientsProps> = ({ patients }) => {
   return (
     <>
       <ConfirmDialog />
-      <Table
+      <Paginator
         name="patient"
         values={listOfPatients}
         canManageCreateButton={canManagePatients}
@@ -189,7 +189,7 @@ const Patients: React.FC<IPatientsProps> = ({ patients }) => {
           }}
         />
         <Column body={actionButtons} exportable={false} />
-      </Table>
+      </Paginator>
     </>
   )
 }

@@ -23,7 +23,7 @@ import {
   FaUserEdit,
   FaUserTimes,
 } from 'react-icons/fa'
-import Table from '../../../components/table'
+import Paginator from '../../../components/paginator'
 import Tooltip from '../../../components/tooltip'
 import { Professional } from '../../../models'
 import { api } from '../../../services/api'
@@ -165,7 +165,7 @@ const Professionals: React.FC<IProfessionalsProps> = ({ professionals }) => {
   return (
     <>
       <ConfirmDialog />
-      <Table
+      <Paginator
         name="professional"
         values={listOfProfessionals}
         canManageCreateButton={isAdmin}
@@ -197,7 +197,7 @@ const Professionals: React.FC<IProfessionalsProps> = ({ professionals }) => {
           }}
         />
         <Column body={actionButtons} exportable={false} />
-      </Table>
+      </Paginator>
     </>
   )
 }

@@ -2,7 +2,7 @@ import { GetServerSideProps } from 'next'
 import { parseCookies } from 'nookies'
 import { Column } from 'primereact/column'
 import React from 'react'
-import Table from '../../../components/table'
+import Paginator from '../../../components/paginator'
 
 import { Exam } from '../../../models/exam.model'
 import { getAPIClient } from '../../../services/axios'
@@ -14,10 +14,10 @@ interface IExamsProps {
 
 const Exams: React.FC<IExamsProps> = ({ exams }) => {
   return (
-    <Table values={exams}>
+    <Paginator name="exam" values={exams} onClickCreateButton={() => {}}>
       <Column field="name" header="Name" sortable />
       <Column field="description" header="Description" sortable />
-    </Table>
+    </Paginator>
   )
 }
 

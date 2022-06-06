@@ -31,7 +31,7 @@ import {
   FaUserTimes,
 } from 'react-icons/fa'
 import Modal from '../../components/modal'
-import Table from '../../components/table'
+import Paginator from '../../components/paginator'
 import Tooltip from '../../components/tooltip'
 
 import { Attendance } from '../../models/attendance.model'
@@ -308,7 +308,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
 
   return (
     <>
-      <Table
+      <Paginator
         name="attendance"
         values={listOfAttendances}
         toggleable
@@ -359,7 +359,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
           }}
         />
         <Column body={actionButtons} exportable={false} />
-      </Table>
+      </Paginator>
 
       <Modal
         methods={methods}
