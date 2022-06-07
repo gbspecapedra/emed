@@ -19,17 +19,13 @@ import { useRouter } from 'next/router'
 import { parseCookies } from 'nookies'
 import { Accordion, AccordionTab } from 'primereact/accordion'
 import { Column } from 'primereact/column'
-import { DataTable } from 'primereact/datatable'
 import React, { useEffect, useState } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
-import { FaTimes } from 'react-icons/fa'
-import { GoPlus } from 'react-icons/go'
 import { api } from 'services/api'
 import { useNotification } from 'services/hooks/useNotification'
 import { getAPIClient } from '../../../services/axios'
 import { calculateBMI, EMED_TOKEN, nullsToUndefined } from '../../../utils'
 import { Input } from '@/components/form/input'
-import { Select } from '@/components/form/select'
 import { Textarea } from '@/components/form/textarea'
 import Table from '@/components/table'
 import Tooltip from '@/components/tooltip'
@@ -49,12 +45,12 @@ interface IAttendanceProps {
   attendanceId: number
   attendance: Attendance
   exams: Exam[]
+  medicines: Medicine[]
 }
 
 const Attendance: React.FC<IAttendanceProps> = ({
   attendanceId,
   attendance: { patient, medicalRecord },
-  exams,
 }) => {
   const router = useRouter()
   const notification = useNotification()
@@ -208,63 +204,14 @@ const Attendance: React.FC<IAttendanceProps> = ({
               </VStack>
             </AccordionTab>
             <AccordionTab header="Requested and/or evaluated exams">
-              <Table
-                values={listOfExams}
-                header={
-                  <HStack>
-                    <Select
-                      name="exam"
-                      options={exams.map(({ id, name }: Exam) => {
-                        return {
-                          label: name,
-                          value: `${id}`,
-                        }
-                      })}
-                    />
-                    <Button
-                      colorScheme="green"
-                      variant="outline"
-                      marginRight={2}
-                      onClick={() => {}}
-                    >
-                      <GoPlus />
-                    </Button>
-                  </HStack>
-                }
-              >
+              <Table values={listOfExams}>
                 <Column field="name"></Column>
-                <Column
-                  body={row => (
-                    <Button
-                      colorScheme="blue"
-                      variant="ghost"
-                      marginRight={2}
-                      onClick={() => console.log(row)}
-                    >
-                      <FaTimes />
-                    </Button>
-                  )}
-                  exportable={false}
-                />
               </Table>
             </AccordionTab>
             <AccordionTab header="Prescription medicines">
-              <DataTable value={listOfMedicines} responsiveLayout="scroll">
-                <Column field="name" header="Name"></Column>
-                <Column
-                  body={row => (
-                    <Button
-                      colorScheme="blue"
-                      variant="solid"
-                      marginRight={2}
-                      onClick={() => console.log(row)}
-                    >
-                      <FaTimes />
-                    </Button>
-                  )}
-                  exportable={false}
-                />
-              </DataTable>
+              <Table values={listOfMedicines}>
+                <Column field="name"></Column>
+              </Table>
             </AccordionTab>
           </Accordion>
           <Button>Prescriptions</Button>
@@ -323,15 +270,11 @@ export const getServerSideProps: GetServerSideProps = async ctx => {
 
   const { params } = ctx
   const attendance = await apiClient.get(`/attendances/${params?.id}`)
-  const exams = await apiClient.get('/exams')
-  const medicines = await apiClient.get('/medicines')
 
   return {
     props: {
       attendanceId: attendance?.data?.id,
       attendance: attendance?.data,
-      exams: exams.data,
-      medicines: medicines?.data,
     },
   }
 }
