@@ -1,16 +1,11 @@
-import {
-  Select as ChakraSelect,
-  SelectProps as ChakraSelectProps,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-} from '@chakra-ui/react'
+import { FormControl, FormErrorMessage, FormLabel } from '@chakra-ui/react'
+import { Dropdown, DropdownProps } from 'primereact/dropdown'
 import { Controller, useFormContext } from 'react-hook-form'
 import { IInputValidator } from '../../../models/interfaces'
 
 type Options = { label: string; value: string }
 
-interface ISelectProps extends ChakraSelectProps {
+interface ISelectProps extends DropdownProps {
   name: string
   options: Options[]
   label?: string
@@ -43,25 +38,26 @@ export const Select: React.FC<ISelectProps> = ({
         <>
           <FormControl isInvalid={!!errors[name]}>
             {label && <FormLabel>{label}</FormLabel>}
-            <ChakraSelect
+            <Dropdown
               {...field}
               {...props}
-              autoFocus
               id={field.name}
               name={field.name}
+              value={field.value}
+              onChange={e => field.onChange(e.value)}
+              options={options}
               placeholder={placeholder}
-              _placeholder={{ color: 'gray.500' }}
+              filter
+              filterBy="label"
+              resetFilterOnHide
+              style={{
+                width: 'inherit',
+              }}
+              panelStyle={{
+                maxWidth: '700px',
+              }}
               data-testid={`select-${name}`}
-            >
-              {options.map(option => (
-                <option
-                  key={`${option.label}-${option.value}`}
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ))}
-            </ChakraSelect>
+            />
             {!!errors[name] && (
               <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
             )}

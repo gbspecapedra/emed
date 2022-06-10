@@ -44,8 +44,6 @@ interface IAttendanceInputs {
 interface IAttendanceProps {
   attendanceId: number
   attendance: Attendance
-  exams: Exam[]
-  medicines: Medicine[]
 }
 
 const Attendance: React.FC<IAttendanceProps> = ({
@@ -55,8 +53,8 @@ const Attendance: React.FC<IAttendanceProps> = ({
   const router = useRouter()
   const notification = useNotification()
 
-  const [listOfExams, setListOfExams] = useState<Exam[]>([])
-  const [listOfMedicines, setListOfMedicines] = useState<Medicine[]>([])
+  const [listOfExams] = useState<Exam[]>(medicalRecord.exams)
+  const [listOfMedicines] = useState<Medicine[]>(medicalRecord.medicines)
   const [action, setAction] = useState<'save' | 'finalize'>('save')
 
   const methods = useForm<IAttendanceInputs>({
@@ -205,16 +203,26 @@ const Attendance: React.FC<IAttendanceProps> = ({
             </AccordionTab>
             <AccordionTab header="Requested and/or evaluated exams">
               <Table values={listOfExams}>
-                <Column field="name"></Column>
+                <Column field="name" header="Name" />
+                <Column field="description" />
               </Table>
             </AccordionTab>
             <AccordionTab header="Prescription medicines">
               <Table values={listOfMedicines}>
-                <Column field="name"></Column>
+                <Column field="name" header="Name" />
+                <Column field="concentration" header="Concentration" />
+                <Column field="usage" header="Usage" />
+                <Column field="producer" header="Producer" />
               </Table>
             </AccordionTab>
           </Accordion>
-          <Button>Prescriptions</Button>
+          <Button
+            onClick={() =>
+              router.push(`/dashboard/attendance/${attendanceId}/prescriptions`)
+            }
+          >
+            Prescriptions
+          </Button>
           <Stack spacing={6} direction={['column', 'row']}>
             <Button
               w="full"
