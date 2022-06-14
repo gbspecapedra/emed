@@ -31,6 +31,7 @@ import { FiHome, FiMenu, FiBell, FiChevronDown, FiUsers } from 'react-icons/fi'
 import { MdOutlineMedicalServices } from 'react-icons/md'
 import { useAuth } from '../../services/contexts/AuthContext'
 import { ActiveLink } from './ActiveLink'
+import { useRoles } from '@/services/hooks/useRoles'
 
 interface LinkItemProps {
   name: string
@@ -158,6 +159,7 @@ interface MobileProps extends FlexProps {
 const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
   const router = useRouter()
   const { professional, signOut } = useAuth()
+  const { isAdmin } = useRoles()
 
   return (
     <Flex
@@ -235,6 +237,11 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
               >
                 Profile
               </MenuItem>
+              {isAdmin && (
+                <MenuItem onClick={() => router.push('/dashboard/reports')}>
+                  Reports
+                </MenuItem>
+              )}
               <MenuDivider />
               <MenuItem onClick={async () => await signOut()}>
                 Sign out

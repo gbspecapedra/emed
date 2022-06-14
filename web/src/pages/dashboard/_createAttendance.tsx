@@ -17,14 +17,10 @@ interface IAttendanceInputs {
 }
 
 interface ICreateAttendanceProps {
-  selectedAppointment: any
   refetch: () => void
 }
 
-const CreateAttendance: React.FC<ICreateAttendanceProps> = ({
-  selectedAppointment,
-  refetch,
-}) => {
+const CreateAttendance: React.FC<ICreateAttendanceProps> = ({ refetch }) => {
   const notification = useNotification()
   const [listOfPatients, setListOfPatients] = useState<Patient[]>([])
   const [listOfProfessionals, setListOfProfessionals] = useState<
@@ -34,6 +30,8 @@ const CreateAttendance: React.FC<ICreateAttendanceProps> = ({
   const methods = useForm<IAttendanceInputs>({
     mode: 'onChange',
   })
+
+  const watchType = methods.watch('type')
 
   const handleCreateAttendance = async (form: IAttendanceInputs) => {
     try {
@@ -117,7 +115,7 @@ const CreateAttendance: React.FC<ICreateAttendanceProps> = ({
               label="Professional"
               options={listOfProfessionals
                 .filter(professional => {
-                  if (selectedAppointment?.type === AttendanceType.TRIAGE) {
+                  if (watchType === AttendanceType.TRIAGE) {
                     return professional.role === ProfessionalRole.NURSE
                   }
                   return professional.role === ProfessionalRole.DOCTOR

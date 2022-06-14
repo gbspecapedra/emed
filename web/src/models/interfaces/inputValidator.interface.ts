@@ -9,7 +9,7 @@ export interface IInputValidator {
   minLength?: IValueMessage
   pattern?: IRegExpMessage
   valueAsNumber?: boolean
-  validate?(value?: string): boolean | string
+  validate?(_value?: string): boolean | string
 }
 
 export interface IValueMessage {

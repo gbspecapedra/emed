@@ -53,7 +53,7 @@ export const DatePicker: React.FC<IDatePickerProps> = ({
             hideOnDateTimeSelect
             className={classNames({ 'p-invalid': !!errors[name] })}
             style={{
-              height: !inline && '2.5rem',
+              height: inline ? '20.5rem' : '2.5rem',
               width: 'inherit',
             }}
             inline={inline}

@@ -92,7 +92,7 @@ const UpdateProfessional: React.FC<IUpdateProfessionalProps> = ({
       <Select
         label="Role"
         name="role"
-        isDisabled={isOwnProfile || !isAdmin}
+        disabled={isOwnProfile || !isAdmin}
         options={Object.keys(ProfessionalRole).map(key => {
           return {
             label: key.charAt(0) + key.slice(1).toLowerCase(),

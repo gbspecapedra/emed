@@ -1,13 +1,11 @@
 import {
   Button,
   Flex,
-  HStack,
   IconButton,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
-  Stack,
   Tag,
   TagLabel,
 } from '@chakra-ui/react'
@@ -17,11 +15,11 @@ import { useRouter } from 'next/router'
 import { parseCookies } from 'nookies'
 import { Column } from 'primereact/column'
 
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
+import { AiOutlineInfoCircle, AiOutlineWarning } from 'react-icons/ai'
 import { BiDotsVerticalRounded } from 'react-icons/bi'
-import { BsExclamationTriangle, BsFillInfoCircleFill } from 'react-icons/bs'
 import {
   FaHistory,
   FaStethoscope,
@@ -30,33 +28,27 @@ import {
   FaUserSlash,
   FaUserTimes,
 } from 'react-icons/fa'
-import Modal from '../../components/modal'
+import Modal, { IModalInputs, initialValues } from '../../components/modal'
 import Paginator from '../../components/paginator'
 import Tooltip from '../../components/tooltip'
 
 import { Attendance } from '../../models/attendance.model'
-import {
-  AttendanceStatus,
-  AttendanceType,
-  ProfessionalRole,
-} from '../../models/enums'
+import { AttendanceStatus, ProfessionalRole } from '../../models/enums'
 import { api } from '../../services/api'
 import { getAPIClient } from '../../services/axios'
 import { useAuth } from '../../services/contexts/AuthContext'
 import { useNotification } from '../../services/hooks/useNotification'
 import { useRoles } from '../../services/hooks/useRoles'
-import { EMED_TOKEN } from '../../utils'
+import { EMED_TOKEN, formatDate } from '../../utils'
 import CreateAttendance from './_createAttendance'
 import { DatePicker } from '@/components/form/datePicker'
 import { Textarea } from '@/components/form/textarea'
 
 interface IAttendanceInputs {
-  type?: AttendanceType
-  professional?: string
-  patient?: string
   date?: Date
   cancellationReason?: string
 }
+
 interface IDashboardProps {
   attendances: Attendance[]
 }
@@ -73,63 +65,34 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
     useState<Attendance[]>(attendances)
 
   const [isShowingModal, setIsShowingModal] = useState<boolean>(false)
-  const [isConfirmationModal, setIsConfirmationModal] = useState<boolean>(false)
-  const [modalSize, setModalSize] = useState<string>('lg')
-  const [modalHeader, setModalHeader] = useState<string>('')
-  const [modalBody, setModalBody] = useState<JSX.Element>(<></>)
+  const [modal, setModal] = useState<IModalInputs>(initialValues)
 
   const methods = useForm<IAttendanceInputs>({
     mode: 'onChange',
   })
 
-  const rescheduleAttendance = useMemo(
-    () => (
-      <Stack align="stretch">
-        <HStack align="center" justify={'center'}>
-          <BsFillInfoCircleFill size={30} color="blue" />
-          <span>
-            Select a date for the next attendance for patient{' '}
-            <b>{selectedAppointment?.patient?.name}</b>.
-          </span>
-        </HStack>
-        <DatePicker
-          name="date"
-          label="Date"
-          placeholder="DD/MM/YYYY"
-          minDate={new Date()}
-          disabledDays={[0, 6]}
-          showTime
-          inline
-          showIcon={false}
-          stepMinute={15}
-          validators={{ required: 'Date is required' }}
-        />
-      </Stack>
-    ),
-    [selectedAppointment],
+  const rescheduleAttendance = (
+    <DatePicker
+      name="date"
+      placeholder="DD/MM/YYYY"
+      minDate={new Date()}
+      disabledDays={[0, 6]}
+      showIcon={false}
+      showTime
+      inline
+      stepMinute={15}
+      validators={{ required: 'Date is required' }}
+    />
   )
 
-  const cancelAttendance = useMemo(
-    () => (
-      <Stack align="stretch" spacing={5}>
-        <HStack align="center">
-          <BsExclamationTriangle size={40} color="orange" />
-          <span>
-            Are you sure you want to cancel the appointment of patient{' '}
-            <b>{selectedAppointment?.patient?.name}</b>?
-          </span>
-        </HStack>
-
-        <Textarea
-          name="cancellationReason"
-          placeholder="Describe the reason for the cancellation..."
-          validators={{
-            required: 'A reason to cancel an attendance is required',
-          }}
-        />
-      </Stack>
-    ),
-    [selectedAppointment],
+  const cancelAttendance = (
+    <Textarea
+      name="cancellationReason"
+      placeholder="Describe the reason for the cancellation..."
+      validators={{
+        required: 'A reason to cancel an attendance is required',
+      }}
+    />
   )
 
   async function refetchAttendances() {
@@ -138,17 +101,19 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
     setListOfAttendances(response.data)
   }
 
-  const handleUpdateAttendance = async (_form: IAttendanceInputs) => {
+  const handleUpdateAttendance = async (form: IAttendanceInputs) => {
     try {
       if (!selectedAppointment) return
       await api
         .put(`/attendances/${selectedAppointment.id}`, {
           id: selectedAppointment.id,
-          date: selectedAppointment.date,
-          status: selectedAppointment.cancellationReason
+          date:
+            selectedAppointment.date ??
+            formatDate(form.date, 'yyyy-MM-dd HH:mm:ss'),
+          status: form.cancellationReason
             ? AttendanceStatus.CANCELED
             : selectedAppointment.status,
-          cancellationReason: selectedAppointment.cancellationReason ?? null,
+          cancellationReason: form.cancellationReason ?? null,
         })
         .then(() => {
           notification.success({
@@ -165,10 +130,6 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
       notification.error()
     }
   }
-
-  const [modalOnSubmit, setModalOnSubmit] = useState<(_form: any) => void>(
-    () => handleUpdateAttendance,
-  )
 
   const handleAttended = async (row: any) => {
     try {
@@ -270,9 +231,13 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
                     icon={<FaUserEdit />}
                     onClick={() => {
                       setSelectedAppointment({ ...row, date: undefined })
-                      setIsConfirmationModal(true)
-                      setModalHeader('Reschedule attendance')
-                      setModalBody(rescheduleAttendance)
+                      setModal({
+                        icon: AiOutlineInfoCircle,
+                        title: 'Reschedule attendance',
+                        subtitle:
+                          'Select the next time and date for the patient attendance.',
+                        body: rescheduleAttendance,
+                      })
                       setIsShowingModal(true)
                     }}
                   >
@@ -282,9 +247,13 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
                     icon={<FaUserTimes />}
                     onClick={() => {
                       setSelectedAppointment(row)
-                      setIsConfirmationModal(true)
-                      setModalHeader('Cancel attendance')
-                      setModalBody(cancelAttendance)
+                      setModal({
+                        icon: AiOutlineWarning,
+                        title: 'Cancel attendance',
+                        subtitle:
+                          'Are you sure you want to cancel this appointment?',
+                        body: cancelAttendance,
+                      })
                       setIsShowingModal(true)
                     }}
                   >
@@ -312,12 +281,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
         name="attendance"
         values={listOfAttendances}
         toggleable
-        panelContent={
-          <CreateAttendance
-            selectedAppointment={selectedAppointment}
-            refetch={refetchAttendances}
-          />
-        }
+        panelContent={<CreateAttendance refetch={refetchAttendances} />}
         canManageCreateButton={canManageAppointments}
         onClickCreateButton={() => {}}
       >
@@ -363,15 +327,11 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
 
       <Modal
         methods={methods}
-        title={modalHeader}
+        content={modal}
         isVisible={isShowingModal}
-        isConfirmation={isConfirmationModal}
-        size={modalSize}
         onClose={handleCloseModal}
-        onSubmit={modalOnSubmit}
-      >
-        {modalBody}
-      </Modal>
+        onSubmit={handleUpdateAttendance}
+      />
     </>
   )
 }

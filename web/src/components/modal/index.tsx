@@ -1,56 +1,48 @@
 import {
   Button,
   HStack,
+  Icon,
   Modal as ChakraModal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  ResponsiveValue,
+  Stack,
 } from '@chakra-ui/react'
-import React, { ReactNode } from 'react'
+import React, { ElementType } from 'react'
 import { FormProvider, SubmitHandler, UseFormReturn } from 'react-hook-form'
-import { FaCheck, FaTimes } from 'react-icons/fa'
+
+export interface IModalInputs {
+  icon?: ElementType
+  title: string
+  subtitle: string
+  body: JSX.Element
+}
+
+export const initialValues: IModalInputs = {
+  title: '',
+  subtitle: '',
+  body: <></>,
+}
 
 interface IModalProps<T> {
-  children: ReactNode
   methods: UseFormReturn<T, any>
-  title: string
+  content: IModalInputs
   isVisible: boolean
-  isConfirmation?: boolean
-  size?:
-    | ResponsiveValue<
-        | 'lg'
-        | 'sm'
-        | 'md'
-        | 'xl'
-        | '2xl'
-        | (string & {})
-        | 'xs'
-        | '3xl'
-        | '4xl'
-        | '5xl'
-        | '6xl'
-        | 'full'
-      >
-    | undefined
   onClose: () => void
   onSubmit: SubmitHandler<T>
 }
 
 export default function Modal<T>({
-  children,
   methods,
-  title,
+  content: { icon, title, subtitle, body },
   isVisible,
-  isConfirmation = false,
-  size = 'md',
   onClose,
   onSubmit,
 }: IModalProps<T>) {
   return (
-    <ChakraModal onClose={onClose} isOpen={isVisible} isCentered size={size}>
+    <ChakraModal onClose={onClose} isOpen={isVisible} isCentered size="lg">
       <ModalOverlay />
 
       <FormProvider {...methods}>
@@ -60,23 +52,22 @@ export default function Modal<T>({
           noValidate
         >
           <ModalHeader>{title}</ModalHeader>
-          <ModalBody>{children}</ModalBody>
+          <ModalBody>
+            <Stack align="stretch">
+              <HStack align="center" justify="center">
+                {icon && <Icon as={icon} fontSize="30" />}
+                <span>{subtitle}</span>
+              </HStack>
+              {body}
+            </Stack>
+          </ModalBody>
           <ModalFooter>
             <HStack>
-              <Button
-                leftIcon={<FaTimes />}
-                colorScheme="red"
-                onClick={onClose}
-              >
-                {isConfirmation ? 'No' : 'Cancel'}
+              <Button colorScheme="red" onClick={onClose}>
+                No
               </Button>
-              <Button
-                type="submit"
-                leftIcon={<FaCheck />}
-                colorScheme="green"
-                onClick={onClose}
-              >
-                {isConfirmation ? 'Yes' : 'Save'}
+              <Button type="submit" colorScheme="green" onClick={onClose}>
+                Yes
               </Button>
             </HStack>
           </ModalFooter>

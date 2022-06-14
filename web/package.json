@@ -28,12 +28,12 @@
     "primereact": "^8.1.1",
     "react": "18.1.0",
     "react-dom": "18.1.0",
+    "react-google-charts": "^4.0.0",
     "react-hook-form": "^7.31.1",
     "react-icons": "^4.3.1",
     "react-phone-input-2": "^2.15.0",
     "sweetalert2": "^11.4.14",
     "sweetalert2-react-content": "^5.0.0",
-    "uuid": "^8.3.2",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
