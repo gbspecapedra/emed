@@ -66,7 +66,7 @@ export default function Modal<T>({
               <Button colorScheme="red" onClick={onClose}>
                 No
               </Button>
-              <Button type="submit" colorScheme="green" onClick={onClose}>
+              <Button type="submit" colorScheme="green">
                 Yes
               </Button>
             </HStack>

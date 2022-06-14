@@ -103,7 +103,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
 
   const handleUpdateAttendance = async (form: IAttendanceInputs) => {
     try {
-      if (!selectedAppointment) return
+      if (!selectedAppointment || !form) return
       await api
         .put(`/attendances/${selectedAppointment.id}`, {
           id: selectedAppointment.id,
@@ -116,6 +116,7 @@ const Dashboard: React.FC<IDashboardProps> = ({ attendances }) => {
           cancellationReason: form.cancellationReason ?? null,
         })
         .then(() => {
+          handleCloseModal()
           notification.success({
             title: `Attendance ${
               selectedAppointment.status === AttendanceStatus.CANCELED
