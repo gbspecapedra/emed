@@ -6,30 +6,23 @@ import { Chart } from 'react-google-charts'
 import { getAPIClient } from '@/services/axios'
 import { EMED_TOKEN } from '@/utils/constants'
 
+type ReportType = { [x: string]: any }
+
 interface IReportsProps {
-  type: any
-  status: any
+  type: ReportType
+  status: ReportType
 }
 
 const Reports: React.FC<IReportsProps> = ({ type, status }) => {
-  const data = status.map(
-    ({ status, total }: { status: string; total: number }) => [status, total],
-  )
-
-  console.log([['Status', 'Total'], data[0]])
-
   return (
     <Stack>
       <Chart
         chartType="PieChart"
-        data={[
-          ['Task', 'Hours per Day'],
-          ['Work', 11],
-          ['Eat', 2],
-          ['Commute', 2],
-          ['Watch TV', 2],
-          ['Sleep', 7],
-        ]}
+        data={[['Type', 'Total']].concat(
+          type.map((obj: ReportType) => {
+            return Object.keys(obj).map(key => obj[key])
+          }),
+        )}
         options={{
           title: 'Attendance type',
         }}
@@ -40,7 +33,11 @@ const Reports: React.FC<IReportsProps> = ({ type, status }) => {
 
       <Chart
         chartType="PieChart"
-        data={[['Status', 'Total'], data]}
+        data={[['Status', 'Total']].concat(
+          status.map((obj: ReportType) => {
+            return Object.keys(obj).map(key => obj[key])
+          }),
+        )}
         options={{
           title: 'Attendance status',
         }}
