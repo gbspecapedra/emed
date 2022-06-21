@@ -9,9 +9,9 @@ import {
 import { useRouter } from 'next/router'
 import { ReactElement } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
-import { Input } from '@/components/form/input'
-import { useAuth } from '@/services/contexts/AuthContext'
-import { emailValidator } from '@/utils/validators'
+import { Input } from '../../components/form/input'
+import { useAuth } from '../../services/contexts/AuthContext'
+import { emailValidator } from '../../utils/validators'
 
 interface IResetPasswordInputs {
   email: string

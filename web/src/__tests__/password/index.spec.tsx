@@ -1,10 +1,10 @@
-import ResetPassword from '../pages/reset-password'
 import { render, act, screen, fireEvent, waitFor } from '@testing-library/react'
+import ForgotPassword from '../../pages/password'
 
-describe('ResetPassword page', () => {
+describe('ForgotPassword page', () => {
   beforeEach(async () => {
     await act(async () => {
-      render(<ResetPassword />)
+      render(<ForgotPassword />)
     })
   })
 

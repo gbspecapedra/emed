@@ -8,7 +8,7 @@ describe('Login page', () => {
     })
   })
 
-  it('should display heading sign-in message', () => {
+  it('should display heading', () => {
     const heading = screen.getByRole('heading', {
       name: 'Welcome Back',
     })

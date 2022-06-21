@@ -1,4 +1,4 @@
-import { Box, Heading, Text, Button } from '@chakra-ui/react'
+import { Heading, Text, Button, Flex } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { ReactElement } from 'react'
 
@@ -6,7 +6,7 @@ const Custom404 = () => {
   const router = useRouter()
 
   return (
-    <Box textAlign="center" py={10} px={6}>
+    <Flex flexDirection={'column'} minH={'100vh'} alignItems="center" justifyContent={'center'} py={10} px={6}>
       <Heading
         display="inline-block"
         as="h2"
@@ -29,10 +29,11 @@ const Custom404 = () => {
         color="white"
         variant="solid"
         onClick={() => router.replace('/')}
+        data-testid='home-button'
       >
         Go to Home
       </Button>
-    </Box>
+    </Flex>
   )
 }
 

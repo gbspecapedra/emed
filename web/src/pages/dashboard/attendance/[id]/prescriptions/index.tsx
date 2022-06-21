@@ -237,7 +237,7 @@ const Prescriptions: React.FC<IPrescriptionsProps> = ({
               disabled={!methods.formState.isValid}
               data-testid="submit-form-button"
             >
-              <PDFDownloadLink document={<PDF />} fileName="somename.pdf">
+              <PDFDownloadLink document={<PDF />} fileName="prescription.pdf">
                 Generate
               </PDFDownloadLink>
             </Button>
