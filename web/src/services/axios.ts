@@ -9,7 +9,7 @@ export function getAPIClient(ctx?: any) {
     baseURL:
       process.env.NODE_ENV === 'development'
         ? 'http://localhost:3333'
-        : 'http://localhost:3333',
+        : 'https://emed-service.herokuapp.com/',
   })
 
   //shows the information for each request
