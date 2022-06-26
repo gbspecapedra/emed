@@ -16,7 +16,6 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { FaTimes } from 'react-icons/fa'
 import { GoPlus } from 'react-icons/go'
 import { Select } from '@/components/form/select'
-import { PDF } from '@/components/pdf'
 import Table from '@/components/table'
 import { Attendance } from '@/models/attendance.model'
 import { Exam } from '@/models/exam.model'
@@ -25,6 +24,8 @@ import { api } from '@/services/api'
 import { getAPIClient } from '@/services/axios'
 import { useNotification } from '@/services/hooks/useNotification'
 import { EMED_TOKEN } from '@/utils/constants'
+import { usePrinter } from '@/components/report/usePrinter'
+import { Prescription } from './Prescription'
 
 interface IPrescriptionsInputs {
   exam?: Exam
@@ -40,17 +41,16 @@ interface IPrescriptionsProps {
 
 const Prescriptions: React.FC<IPrescriptionsProps> = ({
   attendanceId,
-  attendance: { medicalRecord },
+  attendance: { patient, medicalRecord },
   exams,
   medicines,
 }) => {
   const router = useRouter()
   const notification = useNotification()
+  const { printPDF } = usePrinter();
 
-  const [listOfExams, setListOfExams] = useState<Pick<Exam, 'id'>[]>([])
-  const [listOfMedicines, setListOfMedicines] = useState<
-    Pick<Medicine, 'id'>[]
-  >([])
+  const [listOfExams, setListOfExams] = useState<Exam[]>([])
+  const [listOfMedicines, setListOfMedicines] = useState<Medicine[]>([])
 
   const methods = useForm<IPrescriptionsInputs>({
     mode: 'onChange',
@@ -87,6 +87,7 @@ const Prescriptions: React.FC<IPrescriptionsProps> = ({
             title: 'Prescription successfully generated',
             to: `/dashboard/attendance/${attendanceId}`,
           })
+          handlePrinter()
         })
         .catch(({ response }) => {
           notification.error({ message: response.data.error })
@@ -95,6 +96,11 @@ const Prescriptions: React.FC<IPrescriptionsProps> = ({
       notification.error()
     }
   }
+
+  const handlePrinter = () => {
+    const docBody = Prescription({patient, exams: listOfExams, medicines: listOfMedicines});
+    printPDF({ docBody });
+  };
 
   return (
     <FormProvider {...methods}>
@@ -231,15 +237,14 @@ const Prescriptions: React.FC<IPrescriptionsProps> = ({
               Cancel
             </Button>
             <Button
+              type='submit'
               w="full"
               colorScheme="green"
               isLoading={methods.formState.isSubmitting}
               disabled={!methods.formState.isValid}
               data-testid="submit-form-button"
             >
-              <PDFDownloadLink document={<PDF />} fileName="prescription.pdf">
-                Generate
-              </PDFDownloadLink>
+              Save
             </Button>
           </Stack>
         </Stack>

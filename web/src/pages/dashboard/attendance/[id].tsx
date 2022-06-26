@@ -30,6 +30,10 @@ import { Textarea } from '@/components/form/textarea'
 import Table from '@/components/table'
 import Tooltip from '@/components/tooltip'
 import { Attendance } from '@/models/attendance.model'
+import { useRoles } from '@/services/hooks/useRoles'
+import { MdOutlinePictureAsPdf } from 'react-icons/md'
+import { Prescription } from './[id]/prescriptions/Prescription'
+import { usePrinter } from '@/components/report/usePrinter'
 
 interface IAttendanceInputs {
   description?: string
@@ -52,6 +56,8 @@ const Attendance: React.FC<IAttendanceProps> = ({
 }) => {
   const router = useRouter()
   const notification = useNotification()
+  const { canManagePrescriptions } = useRoles();
+   const { printPDF } = usePrinter();
 
   const [listOfExams] = useState<Exam[]>(medicalRecord.exams)
   const [listOfMedicines] = useState<Medicine[]>(medicalRecord.medicines)
@@ -122,6 +128,38 @@ const Attendance: React.FC<IAttendanceProps> = ({
     } else {
       handleFinalizeAttendance(values)
     }
+  }
+
+  const handlePrinter = (row: any, type: 'exam' | 'medicine') => {
+    let exams: Exam[] = []
+    let medicines: Medicine[] = []
+
+    if (type === 'exam') exams = [row]
+    if (type === 'medicine') medicines = [row]
+
+    const docBody = Prescription({patient, exams: exams, medicines: medicines});
+    printPDF({ docBody });
+  };
+
+ const actionButtons = (row: any, type: 'exam' | 'medicine') => {
+   return (
+     <>
+      {canManagePrescriptions && (
+          <Flex flexDirection="row" justifyContent="end">
+            <Tooltip title="Generate prescription">
+              <Button
+                colorScheme="blue"
+                variant="ghost"
+                marginRight={2}
+                onClick={() => handlePrinter(row, type)}
+              >
+                <MdOutlinePictureAsPdf />
+              </Button>
+            </Tooltip>
+          </Flex>
+        )}
+     </>
+    )
   }
 
   return (
@@ -205,6 +243,7 @@ const Attendance: React.FC<IAttendanceProps> = ({
               <Table values={listOfExams}>
                 <Column field="name" header="Name" />
                 <Column field="description" />
+                <Column body={(row: any) => actionButtons(row, 'exam')} exportable={false} />
               </Table>
             </AccordionTab>
             <AccordionTab header="Prescription medicines">
@@ -213,16 +252,19 @@ const Attendance: React.FC<IAttendanceProps> = ({
                 <Column field="concentration" header="Concentration" />
                 <Column field="usage" header="Usage" />
                 <Column field="producer" header="Producer" />
+                <Column body={(row: any) => actionButtons(row, 'medicine')} exportable={false} />
               </Table>
             </AccordionTab>
           </Accordion>
-          <Button
-            onClick={() =>
-              router.push(`/dashboard/attendance/${attendanceId}/prescriptions`)
-            }
-          >
-            Prescriptions
-          </Button>
+          {canManagePrescriptions &&
+            <Button
+              onClick={() =>
+                router.push(`/dashboard/attendance/${attendanceId}/prescriptions`)
+              }
+            >
+              Prescriptions
+            </Button>
+          }
           <Stack spacing={6} direction={['column', 'row']}>
             <Button
               w="full"

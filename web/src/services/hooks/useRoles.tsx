@@ -13,14 +13,13 @@ export const useRoles = () => {
   const canManageAttendances =
     role === ProfessionalRole.DOCTOR || role === ProfessionalRole.NURSE
 
-  //   role?.match(
-  //   `^((?!(${ProfessionalRole.DOCTOR}|${ProfessionalRole.NURSE})).)*$`,
-  // )
+  const canManagePrescriptions = role === ProfessionalRole.DOCTOR
 
   return {
     isAdmin,
     canManagePatients,
     canManageAppointments,
     canManageAttendances,
+    canManagePrescriptions
   }
 }
