@@ -6,7 +6,6 @@ import {
   Stack,
   useColorModeValue,
 } from '@chakra-ui/react'
-import { PDFDownloadLink } from '@react-pdf/renderer'
 import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import { parseCookies } from 'nookies'
@@ -15,7 +14,9 @@ import React, { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { FaTimes } from 'react-icons/fa'
 import { GoPlus } from 'react-icons/go'
+import { Prescription } from '@/components/report/layout/Prescription'
 import { Select } from '@/components/form/select'
+import { usePrinter } from '@/components/report/usePrinter'
 import Table from '@/components/table'
 import { Attendance } from '@/models/attendance.model'
 import { Exam } from '@/models/exam.model'
@@ -24,8 +25,6 @@ import { api } from '@/services/api'
 import { getAPIClient } from '@/services/axios'
 import { useNotification } from '@/services/hooks/useNotification'
 import { EMED_TOKEN } from '@/utils/constants'
-import { usePrinter } from '@/components/report/usePrinter'
-import { Prescription } from './Prescription'
 
 interface IPrescriptionsInputs {
   exam?: Exam

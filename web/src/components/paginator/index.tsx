@@ -1,6 +1,6 @@
 import { Button, HStack } from '@chakra-ui/react'
 import { Panel } from 'primereact/panel'
-import React, { ReactNode, useRef, useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import { FaMinus } from 'react-icons/fa'
 import { GoPlus } from 'react-icons/go'
 import { SiMicrosoftexcel } from 'react-icons/si'
@@ -30,7 +30,6 @@ export default function Paginator<T>({
   canManageCreateButton = false,
   onClickCreateButton,
 }: IPaginatorProps<T>) {
-  const table = useRef(null)
   const [globalFilter, setGlobalFilter] = useState(null)
 
   const handleExportToExcel = () => {

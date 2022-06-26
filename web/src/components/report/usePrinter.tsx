@@ -1,10 +1,7 @@
 import ReactPDF, { pdf } from '@react-pdf/renderer';
 import React from 'react';
 
-import {
-  PrintPageLayout,
-  PrintPageLayoutProps,
-} from './layout';
+import { PrintPageLayout, PrintPageLayoutProps } from './layout';
 
 interface PrintDocumentBody extends PrintPageLayoutProps {
   docBody: React.ReactElement;
@@ -22,14 +19,15 @@ export const usePrinter = () => {
         ', height=' +
         window.screen.height * 0.8,
     );
+
     pdf(document)
       .toBlob()
       .then(blob => {
-        convertPdf(blob, pdfWindow);
-        pdfWindow.focus();
+        convertPdf(blob, pdfWindow!);
+        pdfWindow!.focus();
       })
-      .catch(error => {
-        pdfWindow.close();
+      .catch(() => {
+        pdfWindow!.close();
       });
   };
   return { printPDF };

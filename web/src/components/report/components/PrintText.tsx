@@ -1,4 +1,4 @@
-import ReactPDF, { StyleSheet, Text, View } from '@react-pdf/renderer';
+import { StyleSheet, Text, View } from '@react-pdf/renderer';
 import React from 'react';
 
 import { usePrinterStyles } from '../usePrinterStyles';
@@ -6,12 +6,10 @@ import { usePrinterStyles } from '../usePrinterStyles';
 interface PrintTextProps {
   children: React.ReactNode;
   align?: 'center' | 'left' | 'right' | 'justify';
-  wrapperStyles?: ReactPDF.Style;
-  textStyles?: ReactPDF.Style;
 }
 
 export const PrintText = (props: PrintTextProps) => {
-  const { children, align, wrapperStyles, textStyles } = props;
+  const { children, align } = props;
   const { config } = usePrinterStyles();
 
   const classes = StyleSheet.create({
@@ -24,8 +22,8 @@ export const PrintText = (props: PrintTextProps) => {
   });
 
   return (
-    <View style={[classes.wrapper, wrapperStyles]}>
-      <Text style={[classes.text, textStyles]}>{children}</Text>
+    <View style={[classes.wrapper]}>
+      <Text style={[classes.text]}>{children}</Text>
     </View>
   );
 };

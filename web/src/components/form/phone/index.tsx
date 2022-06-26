@@ -46,7 +46,7 @@ export const InputPhone: React.FC<IInputPhoneProps> = ({
           />
 
           {!!errors[name] && (
-            <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
+            <FormErrorMessage><>{errors[name]?.message}</></FormErrorMessage>
           )}
         </FormControl>
       )}

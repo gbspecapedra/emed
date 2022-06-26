@@ -28,6 +28,8 @@ import {
   FaUserSlash,
   FaUserTimes,
 } from 'react-icons/fa'
+import { DatePicker } from '@/components/form/datePicker'
+import { Textarea } from '@/components/form/textarea'
 import Modal, { IModalInputs, initialValues } from '../../components/modal'
 import Paginator from '../../components/paginator'
 import Tooltip from '../../components/tooltip'
@@ -41,8 +43,6 @@ import { useNotification } from '../../services/hooks/useNotification'
 import { useRoles } from '../../services/hooks/useRoles'
 import { EMED_TOKEN, formatDate } from '../../utils'
 import CreateAttendance from './_createAttendance'
-import { DatePicker } from '@/components/form/datePicker'
-import { Textarea } from '@/components/form/textarea'
 
 interface IAttendanceInputs {
   date?: Date

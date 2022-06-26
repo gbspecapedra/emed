@@ -1,4 +1,4 @@
-import ReactPDF, { StyleSheet, Text } from '@react-pdf/renderer';
+import { StyleSheet, Text } from '@react-pdf/renderer';
 import React from 'react';
 
 import { usePrinterStyles } from '../usePrinterStyles';
@@ -10,11 +10,10 @@ interface PrintTitleProps {
   underline?: boolean;
   align?: 'center' | 'left' | 'right' | 'justify';
   transform?: 'uppercase' | 'capitalize' | 'lowercase';
-  styles?: ReactPDF.Style;
 }
 
 export const PrintTitle = (props: PrintTitleProps) => {
-  const { title, level, newPage, align, transform, underline, styles } = props;
+  const { title, level, newPage, align, transform } = props;
   const { getTitleStyle } = usePrinterStyles();
   const heading = getTitleStyle(level);
 
@@ -34,7 +33,7 @@ export const PrintTitle = (props: PrintTitleProps) => {
 
   return (
     <Text
-      style={[classes.title, underline && classes.line, styles]}
+      style={[classes.title]}
       break={newPage ?? false}
     >
       {title}

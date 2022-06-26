@@ -29,9 +29,9 @@ import { AiOutlineUser } from 'react-icons/ai'
 import { FaFileMedicalAlt } from 'react-icons/fa'
 import { FiHome, FiMenu, FiBell, FiChevronDown, FiUsers } from 'react-icons/fi'
 import { MdOutlineMedicalServices } from 'react-icons/md'
+import { useRoles } from '@/services/hooks/useRoles'
 import { useAuth } from '../../services/contexts/AuthContext'
 import { ActiveLink } from './ActiveLink'
-import { useRoles } from '@/services/hooks/useRoles'
 
 interface LinkItemProps {
   name: string

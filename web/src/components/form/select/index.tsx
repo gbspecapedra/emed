@@ -59,7 +59,7 @@ export const Select: React.FC<ISelectProps> = ({
               data-testid={`select-${name}`}
             />
             {!!errors[name] && (
-              <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
+              <FormErrorMessage><>{errors[name]?.message}</></FormErrorMessage>
             )}
           </FormControl>
         </>

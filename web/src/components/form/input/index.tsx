@@ -80,7 +80,7 @@ export const Input: React.FC<IInputProps> = ({
             )}
           </InputGroup>
           {!!errors[name] && (
-            <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
+            <FormErrorMessage><>{errors[name]?.message}</></FormErrorMessage>
           )}
         </FormControl>
       )}

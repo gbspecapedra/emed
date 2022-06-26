@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Patient } from '@/models/patient.model';
 import { PrintText, PrintTitle, SpaceLine } from '@/components/report';
 import { Exam } from '@/models/exam.model';
 import { Medicine } from '@/models/medicine.model';
+import { Patient } from '@/models/patient.model';
 
 interface IPrescriptionProps {
   patient: Pick<Patient, "name">
@@ -20,11 +20,11 @@ export const Prescription = ({patient, exams, medicines}: IPrescriptionProps) =>
       <SpaceLine />
       <PrintTitle title="Requests" level={6} />
       {exams.length > 0 && exams.map(exam => {
-        return <PrintText>{exam.name}</PrintText>;
+        return <PrintText key={exam.name}>{exam.name}</PrintText>;
       })}
       <SpaceLine />
       {medicines.length > 0 && medicines.map(medicine => {
-        return <PrintText>{medicine.name} {medicine.concentration} {medicine.usage} ({medicine.producer})</PrintText>;
+        return <PrintText key={medicine.name}>{medicine.name} {medicine.concentration} {medicine.usage} ({medicine.producer})</PrintText>;
       })}
     </>
   );

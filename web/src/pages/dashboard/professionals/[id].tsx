@@ -4,6 +4,7 @@ import { GetServerSideProps } from 'next'
 import { parseCookies } from 'nookies'
 import React, { useRef } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
+import { passwordStrengthValidator } from '@/utils/validators/passwordValidator'
 import { Input } from '../../../components/form/input'
 import { FormLayout } from '../../../components/form/layout/FormLayout'
 import { Select } from '../../../components/form/select'
@@ -17,7 +18,6 @@ import { useNotification } from '../../../services/hooks/useNotification'
 import { useRoles } from '../../../services/hooks/useRoles'
 import { EMED_TOKEN } from '../../../utils'
 import { emailValidator } from '../../../utils/validators'
-import { passwordStrengthValidator } from '@/utils/validators/passwordValidator'
 
 export interface IProfessionalInputs {
   name: string

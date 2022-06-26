@@ -7,7 +7,7 @@ import { usePrinterStyles } from '../usePrinterStyles';
 export interface PrintPageLayoutProps {
   documentTitle?: string;
   pageProps?: ReactPDF.PageProps;
-  bodyStyles?: ReactPDF.Style;
+  bodyStyles?: ReactPDF.Styles;
   children?: React.ReactNode;
 }
 
